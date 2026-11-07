@@ -3,9 +3,10 @@ title: 'Initial setup: scan harnesses and import skills/MCP into the library'
 kind: code
 parent: 01M6RSQDN4E37HX2EM8F97SADA
 depends_on:
-  - 01M6RSR21N92V3W1HVT3TBWGCD
+  - 01M6RSR2T5EN4GQKFCTRR07XRP
   - 01M6RVX52JWVSGVS8C6QMHTH6A
   - 01M6RVX5BR6J3T9KRKD8WXS548
+  - 01M6RSR23DQ59YAS64WMZ3PTEN
 tags:
   - import
 priority: high
@@ -20,11 +21,32 @@ Scan (user-level only, never project files):
 
 Import:
 - Copies into the library in native formats; a symlinked skill is copied from its target. MCP servers become library TOML definitions.
-- The same skill or server found in both harnesses is deduplicated by content; same name with different content is reported and the user chooses.
+- The same skill or server found in both harnesses is deduplicated by content; same name with different content is reported and skipped (no prompts).
 - Name collisions with existing library entries are never overwritten silently.
 - Dry-run first (shows what would be imported, from where, under which names). Re-runnable and idempotent.
 - Plaintext tokens in MCP env or headers are not copied into library definitions. They are moved into a global secrets .env file in the daypack config dir (owner-only permissions) and the definition gets a reference. Exact mechanism follows the MCP secret-source issue.
 
 Output: a printed list of the original items (paths/entries) that are now in the library and can be removed. No removal, no prompts, no backups needed.
+
+## Acceptance
+
+1. [ ] library import --dry-run lists every skill, subagent and MCP server found in Claude Code user config (including ~/.claude.json local-scope entries) and Pi user config, with source path and target library name, and writes nothing
+2. [ ] library import copies them into the library, deduplicating identical content and asking nothing: name conflicts with different content are reported and skipped
+3. [ ] Plaintext token values found in MCP env/headers are moved to secrets.env and replaced with ${NAME} references; the sentinel-secret test passes
+4. [ ] Plugin-provided items are excluded
+5. [ ] After import it prints the list of original items now safe to remove, and never modifies or deletes harness config
+6. [ ] Running import twice imports nothing the second time
+
+Scan details (after review):
+- Honour CLAUDE_CONFIG_DIR (which also relocates .claude.json) and PI_CODING_AGENT_DIR before falling back to ~/.claude and ~/.pi/agent.
+- Skip ~/.claude/skills/synced/ and anything installed by plugins; dedupe skills that are symlinks by real path.
+- MCP servers of types the library cannot represent (Claude sse/ws) are reported and skipped. Pi oauth/auth keys are not imported; the report notes them.
+
+Secrets during import:
+- Env and header values whose key matches the secret-name rule are moved to secrets.env and replaced with ${NAME} references. NAME is <SERVER>_<KEY>, uppercased, '-' to '_'; names Claude blanks in remote url/headers (ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, AWS_BEARER_TOKEN_BEDROCK, HTTPS_PROXY, NPM_TOKEN) are never produced. If NAME already exists in secrets.env with a different value, the server is reported and skipped.
+- Values in args or url that look like secrets (known prefixes ghp_, sk-, xox; key/token/secret/password query parameters; long high-entropy strings) cause that server to be reported and not imported, with the value redacted, because the library is git-synced.
+- The dry-run output and all reports never contain secret values.
+
+Verifying cleanup: after the user removes the originals, running 'library import --dry-run' again must find nothing to import, which verifies success criterion 1 for supported items.
 
 ## Open questions

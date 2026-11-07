@@ -2,6 +2,9 @@
 title: Project manifest format and loader
 kind: code
 parent: 01M6RSR1PXHKSP1819E2VPNBFE
+depends_on:
+  - 01M6RSR21N92V3W1HVT3TBWGCD
+  - 01M6RVX5E50998CXQHV942P828
 tags:
   - manifest
 priority: high
@@ -14,7 +17,7 @@ Requirements:
 - Artifact names are unique per type in the library, so there are no merge conflicts to resolve.
 - Loading validates every referenced name against the library and fails with a clear message and nearest-name suggestions.
 - Schema version field so the format can evolve; forward-compatible so an optional cross-project key (e.g. templates) could be added later without breaking existing files.
-- MCP servers may also be defined inline in the manifest, using exactly the same schema as library MCP definitions (parser shared with the library loader). Example: [mcp.postgres-shop] with command and args. A name present both inline and in the library is an error, not silent shadowing. Literal secret values are rejected in inline definitions; secrets are references only (see MCP secret handling decision).
+- MCP servers may also be defined inline in the manifest, using exactly the same schema as library MCP definitions (parser shared with the library loader). Example: [inline.mcp.postgres-shop] with command and args. A name present both inline and in the library is an error, not silent shadowing. Literal secret values are rejected in inline definitions; secrets are references only (see MCP secret handling decision).
 - Inline definitions exist for MCP servers only in v1. Skills, agents and instruction fragments are library-only.
 - Per-artifact harness targeting: every entry (skill, MCP server, instruction fragment, subagent, library-based or inline) applies to all selected harnesses by default and may carry an optional harnesses list restricting it, written as a table, e.g. { name = "context7", harnesses = ["claude-code"] }. A plain string means all selected harnesses. Naming a harness that is not selected in the manifest is a validation error. Entries for a type a harness cannot use (e.g. subagents on Pi) are reported clearly, not silently dropped. Rationale: Claude Code is the full-tooling orchestrator; Pi runs small subagent-style tasks and should keep its context free.
 
@@ -44,5 +47,17 @@ harnesses = ["claude-code"]
 - Security: inline MCP servers are arbitrary commands. When a manifest was not authored on this machine (first apply, no lockfile) the apply flow treats inline servers as new executables and requires confirmation (see preview issue); automatic apply must never apply inline servers unattended.
 
 Go package API: LoadManifest(path) -> Manifest; Manifest.Entries() -> resolved list of (ref, harness set); Validate(library) -> []Problem.
+
+## Acceptance
+
+1. [ ] daypack.toml parses with the schema above; unknown top-level keys are an error with the key name
+2. [ ] Entries accept both string and table form; harnesses on an entry must be a subset of the manifest harnesses or validation fails naming the entry
+3. [ ] A reference to a missing library artifact fails with the entry, the type, and the closest existing name
+4. [ ] An inline MCP server whose name equals a library MCP server fails with a collision error
+5. [ ] Inline MCP definitions go through the same validation as library MCP files, including the secret-reference rule
+6. [ ] The project root is found by walking up from a subdirectory; no daypack.toml gives an error that suggests 'daypack init'
+7. [ ] Round trip: loading and re-saving via the add/remove code path preserves comments and entry order
+
+Editing daypack.toml from the CLI (init/add/remove) is done with text-level edits of the relevant array line(s) so comments and layout survive (common Go TOML libraries drop comments on re-encode). If the array layout is not one daypack can edit safely (for example split across unusual constructs), the command fails with 'edit daypack.toml by hand' and shows the line to add or remove. Parsing and validation use a normal TOML library.
 
 ## Open questions

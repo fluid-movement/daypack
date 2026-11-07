@@ -3,20 +3,29 @@ title: Preview / dry-run and change report
 kind: code
 parent: 01M6RSR1RXHMJNSEFMHSYVQ4E0
 depends_on:
-  - 01M6RSR2FKVBKQHS28Z7J39NHB
+  - 01M6RSR2DX646G82T1EYZBD071
 tags:
   - apply
 priority: high
 ---
 
-FR-13, NFR-3, NFR-1. The plan renderer and the confirmation gate. The plan is the single object printed by apply, apply --dry-run and status, and is available as JSON.
+FR-13, NFR-3, NFR-1. This issue defines the Plan model (a Go type listing operations, outcomes and gated flags), its text and JSON renderers, and the gate predicate. It does not compute plans from disk; apply does (apply depends on this issue, not the other way around). The plan is the single object printed by apply, apply --dry-run and status, and is available as JSON.
 
 Plan output (text): grouped by harness target, one line per operation with a marker:
   + create   ~ update   - remove   ! conflict (collision)   ? drift   x unresolved/unsupported
 Each line shows the entry (type:name), the path or JSON key, and for symlinks the link target. MCP servers show the full command line (command + args) or URL with ${VAR} references left unexpanded, and the list of secret variable names they need (never values). A summary line counts operations per marker.
 
-Confirmation gate (decision: nothing that runs commands is applied silently): apply asks for confirmation only when the plan creates or changes an MCP server that is not already in the lockfile with identical command/url (a new executable), including every inline server on a first apply. Otherwise there is no prompt (NFR-1). --yes skips the prompt. With no TTY and no --yes, a gated plan applies nothing and exits 3 with a message naming the gated entries.
+Confirmation gate (decision 'Trust model: library entries trusted, inline MCP servers gated'): library entries apply without confirmation. Inline MCP servers (they come from the committed manifest and are arbitrary commands) require confirmation on the first apply in a project (no lockfile entry for them) and whenever their command, args or url change. --yes skips the prompt. With no TTY and no --yes, a gated plan applies the non-gated operations, skips the gated ones, and exits 3 naming the gated entries. --json implies non-interactive.
 
 After applying, a result report lists what changed, what was skipped and why. JSON output carries the same structure (see CLI contract).
+
+## Acceptance
+
+1. [ ] Plan text for a new project lists every operation with marker, entry, path, and link target for symlinks
+2. [ ] A new MCP server shows its full command line with ${VAR} references unexpanded and never a resolved secret value
+3. [ ] Applying a plan that adds no new MCP command or URL asks no question
+4. [ ] Applying a plan with a new or changed MCP command asks for confirmation on a TTY; --yes proceeds; no TTY and no --yes exits 3 and applies nothing
+5. [ ] On a first apply (no lockfile), inline MCP servers are always gated
+6. [ ] --json output contains the same operations, markers and gated flags as the text plan
 
 ## Open questions

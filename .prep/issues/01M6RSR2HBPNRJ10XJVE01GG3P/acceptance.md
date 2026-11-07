@@ -1,6 +1,7 @@
-- [ ] Plan text for a new project lists every operation with marker, entry, path, and link target for symlinks
-- [ ] A new MCP server shows its full command line with ${VAR} references unexpanded and never a resolved secret value
-- [ ] Applying a plan that adds no new MCP command or URL asks no question
-- [ ] Applying a plan with a new or changed MCP command asks for confirmation on a TTY; --yes proceeds; no TTY and no --yes exits 3 and applies nothing
-- [ ] On a first apply (no lockfile), inline MCP servers are always gated
+- [ ] Plan type, text renderer and JSON renderer are unit-testable from a hand-built Plan (no filesystem)
+- [ ] Text plan lists every operation with marker, entry, path, and link target for symlinks
+- [ ] An MCP server shows its full command line or URL with ${VAR} references unexpanded and the secret variable names it needs, never a value
+- [ ] Gate predicate: library MCP servers are never gated; inline MCP servers are gated when new or when command/args/url changed
+- [ ] Applying a plan with only library entries asks no question, even on a first apply in a fresh worktree
+- [ ] On a TTY a gated plan prompts; --yes proceeds; with no TTY and no --yes the gated operations are skipped and the exit code is 3
 - [ ] --json output contains the same operations, markers and gated flags as the text plan

@@ -1,4 +1,3 @@
 - [ ] Target ID agents-skills-dir; one Symlink item per skill entry: .agents/skills/<name> -> <library>/skills/<name>
 - [ ] Selecting both pi and a fake second harness that declares agents-skills-dir produces each symlink once
 - [ ] A skill restricted to pi still produces the shared-target item and status notes other harnesses that read it
-- [ ] status reports the Pi project trust requirement when pi is selected

@@ -3,8 +3,9 @@ title: Status and drift report
 kind: code
 parent: 01M6RSR1RXHMJNSEFMHSYVQ4E0
 depends_on:
-  - 01M6RSR2DX646G82T1EYZBD071
+  - 01M6RSR2FKVBKQHS28Z7J39NHB
   - 01M6RSR2HBPNRJ10XJVE01GG3P
+  - 01M6RSR2MYB5VPVPS8WHTWTDQG
 tags:
   - apply
 ---
@@ -16,8 +17,16 @@ Reports:
 - Dangling symlinks into the library and managed paths missing on disk.
 - Git hygiene (decision: generated config is git-excluded): every managed untracked path is listed in the exclude block, and no managed untracked path is tracked by git; violations are errors.
 - Unset environment variables referenced by the project's MCP servers (names only, never values).
-- Pi trust: when the pi harness is selected, note that project .pi/mcp.json and .agents/skills load only after Pi project trust is granted.
-- Which other known harnesses will also read a shared target (e.g. a pi-only skill visible to Codex via .agents/skills).
+- Notes and readers: the only place adapter Notes() and the target->readers table are rendered. Pi trust: when the pi harness is selected, read ~/.pi/agent/trust.json (read-only) and report whether this project is trusted; untrusted means project .pi/mcp.json and .agents/skills are silently skipped by Pi, especially in non-interactive runs.
+- Which other known harnesses (from the readers table) will also read a shared target (e.g. a pi-only skill visible to Codex via .agents/skills).
 Exit 0 when everything is ok; 3 when anything needs attention (pending, drift, collision, unresolved, git hygiene error, unset variable).
+
+## Acceptance
+
+1. [ ] A clean applied project reports ok for every entry and exits 0
+2. [ ] Editing a managed file, deleting a managed symlink, and breaking a library link are each reported with the right state and exit 3
+3. [ ] A managed path tracked by git, or missing from the exclude block, is reported as an error
+4. [ ] Referencing an unset env var in an MCP definition is reported by variable name only; the value is never printed
+5. [ ] With pi selected, status mentions the Pi project trust requirement
 
 ## Open questions

@@ -11,10 +11,20 @@ Agents drive daypack as well as the user. Applies to every command (decision: Co
 
 - Package layout: operations live in importable packages (library, manifest, lock, plan, apply, adapters); cmd/ contains only Cobra wiring, flag parsing and rendering. No business logic in cmd/.
 - --json on every command prints one JSON object to stdout and nothing else (logs go to stderr); the object always has ok, command, and command-specific fields (plan operations, problems, items).
-- Exit codes: 0 success / nothing needing attention; 1 error (invalid input, I/O, internal); 2 usage error; 3 attention needed (pending changes in status/dry-run, drift, collision, skipped or gated entries).
-- Non-interactive: no command prompts when stdin is not a TTY; prompts exist only in the gated apply case (preview issue) and are skipped by --yes.
+- Exit codes: 0 success / nothing needing attention; 1 error, including invalid input such as manifest or library validation failures and 'library doctor' problems, I/O and internal errors; 2 usage error; 3 attention needed although input is valid (pending changes in status/dry-run, drift, collision, skipped or gated entries).
+- Non-interactive: --json implies non-interactive; no command prompts when stdin is not a TTY; prompts exist only in the gated apply case (preview issue) and are skipped by --yes.
 - Errors are one line of cause plus one line of hint where possible, on stderr.
 - Global flags: --json, --quiet, --no-color, --project <dir>, --library <dir> (overrides DAYPACK_HOME).
 - No shell completions in v1.
+
+## Acceptance
+
+1. [ ] Every command accepts --json and its stdout parses as a single JSON object with ok and command fields
+2. [ ] Exit codes 0/1/2/3 behave as defined in status, apply and usage-error cases, covered by tests
+3. [ ] cmd/ contains no business logic: operations are testable by calling the packages without Cobra
+4. [ ] With stdin not a TTY, no command blocks waiting for input
+5. [ ] --library and --project overrides are honoured by every command
+
+Repository scaffolding owned by this issue (everything else depends on it): go.mod with module github.com/fluid-movement/daypack, cmd/daypack/main.go, the Cobra root command with the global flags above, the package skeleton (library, manifest, lock, plan, apply, adapters), and the adapter registry file internal/adapters/registry.go (one line per adapter).
 
 ## Open questions

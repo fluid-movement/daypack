@@ -1,9 +1,10 @@
 ---
-title: Auto-apply on fresh clone or worktree
+title: Auto-apply for new worktrees and checkouts (git post-checkout hook)
 kind: code
 parent: 01M6RSR1RXHMJNSEFMHSYVQ4E0
 depends_on:
   - 01M6RSR2FKVBKQHS28Z7J39NHB
+  - 01M6RVX5E50998CXQHV942P828
 tags:
   - apply
 priority: high
@@ -11,6 +12,15 @@ priority: high
 
 Decision: generated config is git-excluded, so every fresh clone or git worktree needs an apply. 'daypack hook install' installs a git post-checkout hook in the repository (via 'git rev-parse --git-path hooks', so it works for worktrees; refuses to overwrite an existing hook, instead printing the line to add) that runs 'daypack apply --auto'.
 
---auto semantics (NFR-3, never apply untrusted content unattended): applies only library-based entries; if the manifest contains inline MCP servers, or a plan would create a gated (new executable) item, it applies nothing for those and prints one line telling the user to run 'daypack apply'. It never prompts, never uses --force/--adopt, and exits 0 so checkout is not blocked. A repo without daypack.toml is a silent no-op. 'daypack hook uninstall' removes only the hook daypack installed.
+--auto semantics (NFR-3, never apply untrusted content unattended): applies library-based entries (trusted, per decision 'Trust model: library entries trusted, inline MCP servers gated'); inline MCP servers are never applied unattended: they are skipped with a notice and prints one line telling the user to run 'daypack apply'. It never prompts, never uses --force/--adopt, and exits 0 so checkout is not blocked. A repo without daypack.toml is a silent no-op. 'daypack hook uninstall' removes only the hook daypack installed.
+
+## Acceptance
+
+1. [ ] git worktree add in a repo with the hook and a library-only manifest produces a fully wired worktree without a manual apply
+2. [ ] A manifest with inline MCP servers applies nothing for them and prints the notice line; the checkout succeeds
+3. [ ] hook install refuses to overwrite an existing post-checkout hook and prints what to add
+4. [ ] hook uninstall removes only daypack's hook
+
+Scope note: git does not clone hooks, so this covers new worktrees and branch checkouts in a repository where the hook is installed; after a fresh clone run 'daypack apply' (and 'daypack hook install'). The hook script contains the absolute path of the daypack binary because GUI git clients often have a minimal PATH. Already-converged items are adopted silently (see the ownership issue), so a committed AGENTS.md section does not block it.
 
 ## Open questions

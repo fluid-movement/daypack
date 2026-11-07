@@ -5,3 +5,5 @@
 - [ ] Names violating the naming rules or duplicated within a type are reported by Validate with file paths
 - [ ] A skill whose frontmatter name differs from its folder name is reported by Validate
 - [ ] Unit tests cover each rule using fixture libraries; no test touches the real home directory
+- [ ] A skill without a non-empty frontmatter description fails Validate
+- [ ] Secret-looking values in args/url produce a warning naming the file and field

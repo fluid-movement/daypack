@@ -1,3 +1,4 @@
-- [ ] Target ID claude-agents-dir; one item per agent entry at .claude/agents/<name>.md (symlink to the library file; fall back to a copy if symlinks do not work, see finding)
-- [ ] Library validation rejects an agent file without frontmatter name and description before it can be applied
-- [ ] agents listed for a pi-only entry or a manifest selecting only pi produce an 'unsupported' line, not an error
+- [ ] Target ID claude-agents-dir; one File item per agent entry at .claude/agents/<name>.md with the library file's exact bytes
+- [ ] Library validation rejects an agent file without frontmatter name and description, or whose name differs from the file name
+- [ ] A library edit followed by apply updates the copy (pending update) and does not report drift; hand-editing the copy reports drift
+- [ ] Agents listed with a pi-only manifest or restricted to pi produce an 'unsupported' plan line, not an error

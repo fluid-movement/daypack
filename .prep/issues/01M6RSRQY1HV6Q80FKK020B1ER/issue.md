@@ -5,6 +5,8 @@ parent: 01M6RSR1Y6XR8HFX1YFTZSWGRR
 depends_on:
   - 01M6RSR2MYB5VPVPS8WHTWTDQG
   - 01M6RVX5BR6J3T9KRKD8WXS548
+  - 01M6RTJB4VVF8M46JAZ5RA32P0
+  - 01M6RSR2DX646G82T1EYZBD071
 tags:
   - pi
 ---
@@ -18,5 +20,14 @@ Trust gate: project .pi/mcp.json and project .agents/skills load only after Pi p
 Decision applied: config holds only secret references (issue 01M6RTJB4VVF8M46JAZ5RA32P0).
 
 Decision: daypack does not set exposure; Pi's default stays.
+
+## Acceptance
+
+1. [ ] Target ID pi-mcp-json: one JSONEntry item per MCP server at .pi/mcp.json mcpServers.<name>, shape verified against the Pi finding, ${VAR} references preserved
+2. [ ] Existing keys in .pi/mcp.json, including non-schema keys, survive apply and removal
+3. [ ] No exposure key is written (Pi default stays)
+4. [ ] status reports the Pi project trust requirement when pi is selected
+
+Field support: Pi is only known to expand ${VAR} in env, headers and oauth.clientSecret. A server with ${VAR} references in url, command or args yields an 'unsupported' plan line for pi naming the field, unless the Pi research is extended (e.g. via 'pi mcp list') to verify expansion there, in which case record the result.
 
 ## Open questions

@@ -3,3 +3,4 @@
 - [ ] The adapter also emits JSONEntry items for the server names in enabledMcpjsonServers in .claude/settings.local.json, preserving other keys in that file
 - [ ] If daypack created .mcp.json it is excluded from git; if it pre-existed tracked, items are marked tracked and not excluded
 - [ ] Resolved secret values never appear in any written file (fixture test greps all outputs for a sentinel secret value)
+- [ ] A manual check of approval behaviour (fresh folder, and a git worktree) is recorded in the issue log; if approval is not honoured, status prints an approval hint

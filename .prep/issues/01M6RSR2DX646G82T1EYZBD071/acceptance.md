@@ -1,8 +1,9 @@
-- [ ] A fresh apply writes .daypack/lock.toml listing every created item with kind, path and hash
-- [ ] Re-running apply with no manifest change leaves the lockfile and every managed file byte-identical
-- [ ] A pre-existing file or JSON key not in the lockfile is never modified; apply reports a collision and exits non-zero unless --adopt is given
-- [ ] Editing a managed file by hand is reported as drift and is not overwritten or deleted without --force
-- [ ] Removing an entry from the manifest removes exactly its items and its lockfile rows, and leaves hand-written siblings untouched
-- [ ] info/exclude contains a daypack block with exactly the managed untracked paths plus .daypack/, and works from a git worktree
-- [ ] A JSON file with unknown keys and custom indentation round-trips with only daypack-owned keys changed
-- [ ] A killed process between operations leaves a valid lockfile that matches what is on disk (tested with fault injection)
+- [ ] Package-level: Lock.Save then Lock.Load round-trips every item kind (symlink, file, json-entry, json-array-element, md-section)
+- [ ] Package-level: Status() distinguishes ok, missing, drifted and collision for each item kind
+- [ ] Package-level: an existing item exactly equal to the desired item is adopted silently; an unowned item that differs is a collision
+- [ ] Package-level: removing an entry's items never touches hand-written siblings, other JSON keys, or text outside daypack markers
+- [ ] Package-level: JSON edits preserve unknown keys, key order, indentation and trailing newline (byte-diff test); hashes use canonical JSON
+- [ ] ExcludeBlock produces one block per project root, regenerates only its own block, and works from a git worktree
+- [ ] Path safety: lockfile or item paths containing '..', absolute paths, symlinked .daypack/, symlinked parent directories, or a git-tracked lock.toml are refused (one test each)
+- [ ] Tracked managed content that equals the desired content converges silently; one that differs from both lockfile hash and desired content is reported as drift
+- [ ] Atomic writes: files are written via temp file + rename in the same directory; the lockfile is rewritten after each batch of operations

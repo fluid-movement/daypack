@@ -1,3 +1,3 @@
 - [ ] go build produces a single binary with no cgo dependency
 - [ ] A tag-triggered workflow publishes macOS and Linux archives
-- [ ] README documents install and the secrets.env shell-profile line
+- [ ] README documents install via go install and the secrets.env shell-profile line

@@ -4,3 +4,7 @@
 - [ ] Plugin-provided items are excluded
 - [ ] After import it prints the list of original items now safe to remove, and never modifies or deletes harness config
 - [ ] Running import twice imports nothing the second time
+- [ ] Env vars named <SERVER>_<KEY> uppercased are created in secrets.env; a name clash with a different value skips the server and reports it
+- [ ] A server with a secret-looking value in args or url is not imported and is reported with the value redacted
+- [ ] After removing originals, 'library import --dry-run' reports nothing to import
+- [ ] CLAUDE_CONFIG_DIR and PI_CODING_AGENT_DIR are honoured; sse/ws servers and plugin items are skipped with a note

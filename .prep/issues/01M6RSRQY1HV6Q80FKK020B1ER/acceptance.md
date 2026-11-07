@@ -1,4 +1,4 @@
 - [ ] Target ID pi-mcp-json: one JSONEntry item per MCP server at .pi/mcp.json mcpServers.<name>, shape verified against the Pi finding, ${VAR} references preserved
 - [ ] Existing keys in .pi/mcp.json, including non-schema keys, survive apply and removal
 - [ ] No exposure key is written (Pi default stays)
-- [ ] status reports the Pi project trust requirement when pi is selected
+- [ ] A server with ${VAR} in url, command or args produces an 'unsupported' plan line for pi naming the field, and no .pi/mcp.json entry for it

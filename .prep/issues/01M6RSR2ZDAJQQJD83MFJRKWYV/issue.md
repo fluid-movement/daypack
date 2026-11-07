@@ -4,6 +4,9 @@ kind: code
 parent: 01M6RSR1TPWPNN1MC4EJY0D4M2
 depends_on:
   - 01M6RSR2MYB5VPVPS8WHTWTDQG
+  - 01M6RVX52JWVSGVS8C6QMHTH6A
+  - 01M6RTJB4VVF8M46JAZ5RA32P0
+  - 01M6RSR2DX646G82T1EYZBD071
 tags:
   - claude-code
 priority: high
@@ -16,5 +19,18 @@ Facts: project MCP lives in .mcp.json at the repo root, with ${VAR} and ${VAR:-d
 Decision applied: config holds only secret references (issue 01M6RTJB4VVF8M46JAZ5RA32P0).
 
 Decisions: entry-level ownership of .mcp.json via the lockfile (git-excluded if daypack created the file; if it pre-existed and is tracked the user sees the diff). daypack also writes enabledMcpjsonServers for its servers to the git-excluded .claude/settings.local.json so no manual approval is needed; this is the only settings key v1 writes. Unverified (see finding): whether the approval keys are honoured from an untracked settings.local.json in a never-trusted folder; verify during implementation and report in check if approval is still needed.
+
+## Acceptance
+
+1. [ ] Target ID claude-mcp-json: one JSONEntry item per MCP server at .mcp.json mcpServers.<name> with the Claude Code shape (stdio: command/args/env; http: type http, url, headers), ${VAR} references preserved as written
+2. [ ] Applying to a project with a hand-written .mcp.json keeps all other servers and keys untouched
+3. [ ] The adapter also emits JSONEntry items for the server names in enabledMcpjsonServers in .claude/settings.local.json, preserving other keys in that file
+4. [ ] If daypack created .mcp.json it is excluded from git; if it pre-existed tracked, items are marked tracked and not excluded
+5. [ ] Resolved secret values never appear in any written file (fixture test greps all outputs for a sentinel secret value)
+
+Additions after review:
+- Approval entries: enabledMcpjsonServers is a JSON array, so approval is owned as json-array-element items (one per server name). If the name is already present because the user approved it, it is adopted silently and never removed on cleanup. .claude/settings.local.json is git-excluded unless it is tracked.
+- 'tracked' for .mcp.json is computed by core, not the adapter; the adapter only declares the items.
+- Unverified: whether an untracked settings.local.json approves servers in a never-trusted folder, and which settings.local.json Claude reads inside a git worktree. Record a manual check in this issue; if approval is not honoured, status prints the approval hint ('/mcp' approval needed).
 
 ## Open questions

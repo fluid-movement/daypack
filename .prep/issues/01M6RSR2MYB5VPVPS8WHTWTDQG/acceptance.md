@@ -1,5 +1,6 @@
-- [ ] Two adapters declaring the same target ID and identical items for an entry cause that item to be produced and reconciled once
-- [ ] Two adapters disagreeing on an item for the same (target, entry) make core fail with a clear error naming both adapters
-- [ ] A fake third adapter added only by a new package plus one registry line works with apply, status and removal without edits in core
-- [ ] Selecting a harness that does not support a listed type (e.g. agents on pi) yields an 'unsupported' line in the plan and no error
-- [ ] Adapters do no I/O: adapter unit tests run on in-memory input and compare against golden Item lists
+- [ ] Package-level: two adapters declaring the same (target, entry) with identical items yield one item after merge
+- [ ] Package-level: two adapters disagreeing on an item for the same (target, entry) fail with an error naming both adapters
+- [ ] Package-level: a fake third adapter added by one new package plus one registry line is picked up by the merge/plan code with no edits in core
+- [ ] Package-level: selecting a harness that does not support a listed type yields an 'unsupported' result, not an error
+- [ ] Adapter unit tests run on in-memory input and compare against golden Item lists; adapters perform no I/O
+- [ ] Notes(Project) and the target->readers table are exposed for status to render

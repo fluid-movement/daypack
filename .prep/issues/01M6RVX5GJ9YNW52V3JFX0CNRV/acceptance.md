@@ -1,5 +1,5 @@
 - [ ] go test ./... passes offline with no access to the real home directory (tests set DAYPACK_HOME and HOME to temp dirs)
-- [ ] The sentinel-secret test exists and fails if a secret value is ever written into a project
-- [ ] A fake-adapter test proves shared-target and restricted-entry behaviour
-- [ ] Each required scenario in the body has at least one named test
-- [ ] A CI workflow runs vet, tests and lint on push
+- [ ] Helpers exist to build a temp library and a temp project (with git init and optional second worktree) and to run the CLI in-process with --library/--project
+- [ ] A sentinel-secret helper exists: it plants a recognisable secret in env and secrets.env and asserts it is absent from every file under the project and from command output; feature issues call it
+- [ ] A fake harness adapter in test code declares shared and unique targets
+- [ ] A CI workflow runs go vet, go test and golangci-lint on push

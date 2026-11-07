@@ -3,3 +3,4 @@
 - [ ] cmd/ contains no business logic: operations are testable by calling the packages without Cobra
 - [ ] With stdin not a TTY, no command blocks waiting for input
 - [ ] --library and --project overrides are honoured by every command
+- [ ] go.mod (module github.com/fluid-movement/daypack), cmd/daypack/main.go, the Cobra root with global flags and an empty adapter registry file exist and 'go build ./...' succeeds

@@ -43,4 +43,18 @@ type Item struct {
 - Adapters never read or write the filesystem or the lockfile; they only describe desired items. Core executes them. This keeps adapters pure and testable with golden files.
 - Registration: adapters are listed in one registry file; adding a harness is one adapter package plus one registry line.
 
+## Acceptance
+
+1. [ ] Two adapters declaring the same target ID and identical items for an entry cause that item to be produced and reconciled once
+2. [ ] Two adapters disagreeing on an item for the same (target, entry) make core fail with a clear error naming both adapters
+3. [ ] A fake third adapter added only by a new package plus one registry line works with apply, status and removal without edits in core
+4. [ ] Selecting a harness that does not support a listed type (e.g. agents on pi) yields an 'unsupported' line in the plan and no error
+5. [ ] Adapters do no I/O: adapter unit tests run on in-memory input and compare against golden Item lists
+
+Additions after review:
+- Item kinds include json-array-element (e.g. enabledMcpjsonServers). Adapters declare the target root for each target (the directory or file the items may live under); core enforces path safety against it.
+- Adapters do no I/O; 'tracked' (whether an existing file is tracked by git) is computed by core during planning and attached to the plan item. Adapters only declare items.
+- Notes: Adapter also provides Notes(Project) []Note for harness-specific advice (e.g. Pi project trust). A static table target -> []reader harness names (including harnesses that are not adapters, such as codex and opencode for agents-skills-dir and agents-md) lives in the adapters package. Only the status command renders notes and readers; plan/apply do not.
+- Repo scaffolding (go.mod, cmd/daypack, adapter registry file) belongs to the CLI contract issue, which blocks this one.
+
 ## Open questions

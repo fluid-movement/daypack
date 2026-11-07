@@ -1,6 +1,6 @@
-- [ ] Every command accepts --json and its stdout parses as a single JSON object with ok and command fields
-- [ ] Exit codes 0/1/2/3 behave as defined in status, apply and usage-error cases, covered by tests
-- [ ] cmd/ contains no business logic: operations are testable by calling the packages without Cobra
-- [ ] With stdin not a TTY, no command blocks waiting for input
-- [ ] --library and --project overrides are honoured by every command
-- [ ] go.mod (module github.com/fluid-movement/daypack), cmd/daypack/main.go, the Cobra root with global flags and an empty adapter registry file exist and 'go build ./...' succeeds
+- [x] Every command accepts --json and its stdout parses as a single JSON object with ok and command fields
+- [x] Exit codes 0/1/2/3 behave as defined in status, apply and usage-error cases, covered by tests
+- [x] cmd/ contains no business logic: operations are testable by calling the packages without Cobra
+- [x] With stdin not a TTY, no command blocks waiting for input
+- [x] --library and --project overrides are honoured by every command
+- [x] go.mod (module github.com/fluid-movement/daypack), cmd/daypack/main.go, the Cobra root with global flags and an empty adapter registry file exist and 'go build ./...' succeeds

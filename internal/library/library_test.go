@@ -142,9 +142,15 @@ func TestFixtureLibrary(t *testing.T) {
 			t.Fatal("native file modified")
 		}
 	}
-	a, _ := l.Resolve("mcp:docs")
+	a, err := l.Resolve("mcp:docs")
+	if err != nil {
+		t.Fatal(err)
+	}
 	a.MCP.Env["API_KEY"] = "changed"
-	a, _ = l.Resolve("mcp:docs")
+	a, err = l.Resolve("mcp:docs")
+	if err != nil {
+		t.Fatal(err)
+	}
 	if a.MCP.Env["API_KEY"] != "${API_KEY}" {
 		t.Fatal("caller mutated stored definition")
 	}

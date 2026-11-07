@@ -86,13 +86,17 @@ func NewRootCommand(streams IO) *cobra.Command {
 		state.result.Help = buf.String()
 	})
 	root.RunE = func(cmd *cobra.Command, args []string) error { return cmd.Help() }
+	root.AddCommand(libraryCommand(streams, runEditor))
 	return root
 }
 
 func (s *invocation) prepare(cmd *cobra.Command) error {
 	for _, name := range []string{"project", "library"} {
 		if cmd.Flags().Changed(name) {
-			value, _ := cmd.Flags().GetString(name)
+			value, err := cmd.Flags().GetString(name)
+			if err != nil {
+				return fmt.Errorf("read --%s: %w", name, err)
+			}
 			if value == "" {
 				return &Failure{Code: Usage, Cause: fmt.Errorf("--%s must not be empty", name), Hint: "Supply a directory."}
 			}

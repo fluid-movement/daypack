@@ -40,6 +40,7 @@ func run(ctx context.Context, args []string, streams IO, configure func(*cobra.C
 	// Parsing can fail before Cobra reaches the JSON flag. Preserve the request
 	// without invoking command logic or reading values of directory flags as flags.
 	state.options.JSON = requestedJSON(args)
+	diagnosticFailed := false
 	if err != nil {
 		code, hint := Error, ""
 		var failure *Failure
@@ -50,10 +51,17 @@ func run(ctx context.Context, args []string, streams IO, configure func(*cobra.C
 		}
 		state.result.Code = code
 		state.result.Problems = []string{oneLine(err.Error())}
-		diagnostic(streams.Err, err.Error(), hint)
+		if diagnosticErr := diagnostic(streams.Err, err.Error(), hint); diagnosticErr != nil {
+			diagnosticFailed = true
+		}
 	}
 	if renderErr := render(streams.Out, state.options, cmd.CommandPath(), state.result); renderErr != nil {
-		diagnostic(streams.Err, fmt.Sprintf("could not write result: %v", renderErr), "")
+		if diagnosticErr := diagnostic(streams.Err, fmt.Sprintf("could not write result: %v", renderErr), ""); diagnosticErr != nil {
+			return Error
+		}
+		return Error
+	}
+	if diagnosticFailed {
 		return Error
 	}
 	return state.result.Code
@@ -66,7 +74,7 @@ func requestedJSON(args []string) bool {
 		if arg == "--" {
 			break
 		}
-		if arg == "--project" || arg == "--library" {
+		if arg == "--project" || arg == "--library" || arg == "--from" {
 			i++
 			continue
 		}

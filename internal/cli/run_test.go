@@ -75,8 +75,16 @@ func TestOutcomes(t *testing.T) {
 				SetHandler(leaf, func(context.Context, Options, []string) (Result, error) { return tt.result, tt.err })
 				parent := root
 				if len(parts) > 1 {
-					parent = &cobra.Command{Use: parts[0]}
-					root.AddCommand(parent)
+					var err error
+					parent, _, err = root.Find([]string{parts[0]})
+					if err != nil {
+						t.Fatal(err)
+					}
+					old, _, err := parent.Find([]string{parts[1]})
+					if err != nil {
+						t.Fatal(err)
+					}
+					parent.RemoveCommand(old)
 				}
 				parent.AddCommand(leaf)
 			})
@@ -104,7 +112,11 @@ func TestJSONUsageAndHelp(t *testing.T) {
 	} {
 		t.Run(strings.Join(args, " "), func(t *testing.T) {
 			code, out, stderr := invoke(t, args, false, nil)
-			value := object(t, out, code, "daypack")
+			command := "daypack"
+			if len(args) > 0 && args[0] == "help" {
+				command += " help"
+			}
+			value := object(t, out, code, command)
 			if value["help"] != nil {
 				if code != Success || strings.Contains(out, "completion") {
 					t.Fatalf("bad help: %s", out)
@@ -141,7 +153,15 @@ func TestNestedOptionsAndDirectoryPrecedence(t *testing.T) {
 			}
 			called := false
 			code, out, stderr := invoke(t, args, true, func(root *cobra.Command) {
-				group := &cobra.Command{Use: "library"}
+				group, _, err := root.Find([]string{"library"})
+				if err != nil {
+					t.Fatal(err)
+				}
+				old, _, err := group.Find([]string{"doctor"})
+				if err != nil {
+					t.Fatal(err)
+				}
+				group.RemoveCommand(old)
 				leaf := &cobra.Command{Use: "doctor", Args: cobra.NoArgs}
 				SetHandler(leaf, func(_ context.Context, opts Options, _ []string) (Result, error) {
 					called = true
@@ -155,7 +175,6 @@ func TestNestedOptionsAndDirectoryPrecedence(t *testing.T) {
 					return Result{Message: "optional chatter"}, nil
 				})
 				group.AddCommand(leaf)
-				root.AddCommand(group)
 			})
 			if code != Success || !called || stderr != "" {
 				t.Fatalf("code=%d called=%v stderr=%s", code, called, stderr)
@@ -269,4 +288,42 @@ func TestRunBuildsFreshInvocations(t *testing.T) {
 			t.Fatalf("unexpected help: %q", out.String())
 		}
 	}
+}
+
+// failAfterWriter exercises failures on both the cause and hint writes.
+type failAfterWriter struct {
+	remaining int
+	err       error
+}
+
+func (w *failAfterWriter) Write(p []byte) (int, error) {
+	if w.remaining == 0 {
+		return 0, w.err
+	}
+	w.remaining--
+	return len(p), nil
+}
+
+func TestDiagnosticWriteErrors(t *testing.T) {
+	want := errors.New("diagnostic write failed")
+	for _, successfulWrites := range []int{0, 1} {
+		writer := &failAfterWriter{remaining: successfulWrites, err: want}
+		if err := diagnostic(writer, "cause", "hint"); !errors.Is(err, want) {
+			t.Fatalf("after %d writes: got %v, want %v", successfulWrites, err, want)
+		}
+	}
+}
+
+func TestRunDiagnosticWriteFailure(t *testing.T) {
+	environment(t)
+	var out bytes.Buffer
+	code := Run(context.Background(), []string{"--unknown", "--json"}, IO{
+		Out: &out,
+		Err: &failAfterWriter{err: errors.New("diagnostic write failed")},
+	})
+	if code != Error {
+		t.Fatalf("code %d, want %d", code, Error)
+	}
+	// The structured usage result is still delivered when stderr fails.
+	object(t, out.String(), Usage, "daypack")
 }

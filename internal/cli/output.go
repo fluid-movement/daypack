@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/fluid-movement/daypack/internal/library"
 )
 
 const (
@@ -38,12 +40,15 @@ func (e *Failure) Unwrap() error { return e.Cause }
 
 func oneLine(s string) string { return strings.Join(strings.Fields(s), " ") }
 
-func diagnostic(w io.Writer, cause, hint string) {
-	// Diagnostics are best-effort; write failures must not change the exit code.
-	_, _ = fmt.Fprintln(w, oneLine(cause))
-	if hint != "" {
-		_, _ = fmt.Fprintln(w, "Hint: "+oneLine(hint))
+func diagnostic(w io.Writer, cause, hint string) error {
+	if _, err := fmt.Fprintln(w, oneLine(cause)); err != nil {
+		return err
 	}
+	if hint != "" {
+		_, err := fmt.Fprintln(w, "Hint: "+oneLine(hint))
+		return err
+	}
+	return nil
 }
 
 func render(w io.Writer, options Options, command string, result Result) error {
@@ -64,6 +69,13 @@ func render(w io.Writer, options Options, command string, result Result) error {
 	if result.Help != "" {
 		_, err := io.WriteString(w, result.Help)
 		return err
+	}
+	if problems, ok := result.Problems.([]library.Problem); ok {
+		for _, p := range problems {
+			if _, err := fmt.Fprintf(w, "%s: %s: %s %s\n", p.Severity, p.File, p.Message, p.Hint); err != nil {
+				return err
+			}
+		}
 	}
 	if !options.Quiet && result.Message != "" {
 		_, err := fmt.Fprintln(w, result.Message)

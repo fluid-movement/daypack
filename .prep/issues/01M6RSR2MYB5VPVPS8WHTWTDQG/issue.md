@@ -24,4 +24,23 @@ Per-artifact targeting (decision "Per-artifact harness targeting in the manifest
 - Removing a harness from an entry removes its targets only if no remaining harness of that entry (or other entry) uses them.
 - Conformance tests cover restricted and unrestricted entries, including a restricted entry whose target is shared.
 
+Interface sketch (Go; names indicative, shapes binding):
+```go
+type Adapter interface {
+    Name() string                          // "claude-code", "pi"
+    Supports(t ArtifactType) bool          // capability matrix, drives 'unsupported' reports
+    Desired(e Entry, proj Project) ([]Item, error)   // items this entry needs for this harness
+}
+type Item struct {
+    Target string        // stable target ID shared across adapters, e.g. "agents-skills-dir"
+    Entry  string        // "skill:svelte"
+    Kind   ItemKind      // Symlink | File | JSONEntry | MarkdownSection
+    Path   string        // project-relative
+    // kind-specific payload: link target, bytes, JSON key + value, section name + body
+}
+```
+- Items with the same (Target, Entry) from different adapters must be identical; core verifies this and fails loudly if two adapters disagree.
+- Adapters never read or write the filesystem or the lockfile; they only describe desired items. Core executes them. This keeps adapters pure and testable with golden files.
+- Registration: adapters are listed in one registry file; adding a harness is one adapter package plus one registry line.
+
 ## Open questions

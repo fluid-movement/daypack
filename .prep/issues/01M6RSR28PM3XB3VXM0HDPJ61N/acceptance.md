@@ -1,0 +1,7 @@
+- [ ] daypack.toml parses with the schema above; unknown top-level keys are an error with the key name
+- [ ] Entries accept both string and table form; harnesses on an entry must be a subset of the manifest harnesses or validation fails naming the entry
+- [ ] A reference to a missing library artifact fails with the entry, the type, and the closest existing name
+- [ ] An inline MCP server whose name equals a library MCP server fails with a collision error
+- [ ] Inline MCP definitions go through the same validation as library MCP files, including the secret-reference rule
+- [ ] The project root is found by walking up from a subdirectory; no daypack.toml gives an error that suggests 'daypack init'
+- [ ] Round trip: loading and re-saving via the add/remove code path preserves comments and entry order

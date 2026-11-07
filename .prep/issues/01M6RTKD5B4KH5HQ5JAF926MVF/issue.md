@@ -3,12 +3,14 @@ title: Auto-apply on fresh clone or worktree
 kind: code
 parent: 01M6RSR1RXHMJNSEFMHSYVQ4E0
 depends_on:
-  - 01M6RSRR7P0GKP661AK1RHJK0A
+  - 01M6RSR2FKVBKQHS28Z7J39NHB
 tags:
   - apply
 priority: high
 ---
 
-Because generated config is git-excluded (decision 01M6RSRR7P0GKP661AK1RHJK0A), every fresh clone or git worktree needs an apply. Provide a way to do this without remembering: e.g. a post-checkout/worktree hook installer and/or a session-start check that detects an unapplied project and applies or warns. Must fit NFR-1 (no prompts once a manifest exists) and NFR-3 (never applies untrusted content). The orchestrate workflow creates a worktree per issue, so this matters in practice.
+Decision: generated config is git-excluded, so every fresh clone or git worktree needs an apply. 'daypack hook install' installs a git post-checkout hook in the repository (via 'git rev-parse --git-path hooks', so it works for worktrees; refuses to overwrite an existing hook, instead printing the line to add) that runs 'daypack apply --auto'.
+
+--auto semantics (NFR-3, never apply untrusted content unattended): applies only library-based entries; if the manifest contains inline MCP servers, or a plan would create a gated (new executable) item, it applies nothing for those and prints one line telling the user to run 'daypack apply'. It never prompts, never uses --force/--adopt, and exits 0 so checkout is not blocked. A repo without daypack.toml is a silent no-op. 'daypack hook uninstall' removes only the hook daypack installed.
 
 ## Open questions

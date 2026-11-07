@@ -1,0 +1,6 @@
+- [ ] Plan text for a new project lists every operation with marker, entry, path, and link target for symlinks
+- [ ] A new MCP server shows its full command line with ${VAR} references unexpanded and never a resolved secret value
+- [ ] Applying a plan that adds no new MCP command or URL asks no question
+- [ ] Applying a plan with a new or changed MCP command asks for confirmation on a TTY; --yes proceeds; no TTY and no --yes exits 3 and applies nothing
+- [ ] On a first apply (no lockfile), inline MCP servers are always gated
+- [ ] --json output contains the same operations, markers and gated flags as the text plan

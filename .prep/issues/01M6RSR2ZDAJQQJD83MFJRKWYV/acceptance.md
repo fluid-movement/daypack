@@ -1,0 +1,5 @@
+- [ ] Target ID claude-mcp-json: one JSONEntry item per MCP server at .mcp.json mcpServers.<name> with the Claude Code shape (stdio: command/args/env; http: type http, url, headers), ${VAR} references preserved as written
+- [ ] Applying to a project with a hand-written .mcp.json keeps all other servers and keys untouched
+- [ ] The adapter also emits JSONEntry items for the server names in enabledMcpjsonServers in .claude/settings.local.json, preserving other keys in that file
+- [ ] If daypack created .mcp.json it is excluded from git; if it pre-existed tracked, items are marked tracked and not excluded
+- [ ] Resolved secret values never appear in any written file (fixture test greps all outputs for a sentinel secret value)

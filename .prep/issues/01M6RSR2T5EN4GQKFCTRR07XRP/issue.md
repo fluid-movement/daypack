@@ -3,7 +3,7 @@ title: 'Secret sources: env references and global .env file'
 kind: code
 parent: 01M6RSR1TPWPNN1MC4EJY0D4M2
 depends_on:
-  - 01M6RTJB4VVF8M46JAZ5RA32P0
+  - 01M6RSR21N92V3W1HVT3TBWGCD
 tags:
   - secrets
 priority: high

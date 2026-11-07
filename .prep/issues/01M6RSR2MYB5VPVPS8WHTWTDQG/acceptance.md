@@ -1,0 +1,5 @@
+- [ ] Two adapters declaring the same target ID and identical items for an entry cause that item to be produced and reconciled once
+- [ ] Two adapters disagreeing on an item for the same (target, entry) make core fail with a clear error naming both adapters
+- [ ] A fake third adapter added only by a new package plus one registry line works with apply, status and removal without edits in core
+- [ ] Selecting a harness that does not support a listed type (e.g. agents on pi) yields an 'unsupported' line in the plan and no error
+- [ ] Adapters do no I/O: adapter unit tests run on in-memory input and compare against golden Item lists

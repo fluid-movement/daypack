@@ -1,0 +1,3 @@
+- [ ] status --global lists user-level skills, agents and MCP servers per harness and exits 3 when any exist
+- [ ] Plugin-provided items are excluded
+- [ ] Nothing is modified

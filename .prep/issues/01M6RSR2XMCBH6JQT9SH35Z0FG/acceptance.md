@@ -1,0 +1,2 @@
+- [ ] status lists each env var referenced via ${VAR} in the project's MCP servers that is unset in the current environment, by name only
+- [ ] A ${VAR:-default} reference with a default is not reported

@@ -18,4 +18,31 @@ Requirements:
 - Inline definitions exist for MCP servers only in v1. Skills, agents and instruction fragments are library-only.
 - Per-artifact harness targeting: every entry (skill, MCP server, instruction fragment, subagent, library-based or inline) applies to all selected harnesses by default and may carry an optional harnesses list restricting it, written as a table, e.g. { name = "context7", harnesses = ["claude-code"] }. A plain string means all selected harnesses. Naming a harness that is not selected in the manifest is a validation error. Entries for a type a harness cannot use (e.g. subagents on Pi) are reported clearly, not silently dropped. Rationale: Claude Code is the full-tooling orchestrator; Pi runs small subagent-style tasks and should keep its context free.
 
+File and schema (decision: manifest at the project root, committed; TOML):
+- File name: daypack.toml at the project root. The CLI finds the project by walking up from the working directory to the nearest daypack.toml (stopping at the git root or filesystem root).
+- Schema:
+```toml
+version = 1
+harnesses = ["claude-code", "pi"]
+
+skills    = ["svelte", "testing", { name = "browser", harnesses = ["claude-code"] }]
+mcp       = ["context7", { name = "playwright", harnesses = ["claude-code"] }]
+fragments = ["sveltekit-conventions"]
+agents    = ["reviewer"]
+
+# inline MCP servers (MCP only): same schema as library mcp/<name>.toml plus optional harnesses
+[inline.mcp.postgres-shop]
+type = "stdio"
+command = "npx"
+args = ["-y", "postgres-mcp", "--db", "shop_dev"]
+harnesses = ["claude-code"]
+```
+- An entry is a string (all selected harnesses) or a table with name and harnesses. mcp = [...] lists library servers; inline servers live only under [inline.mcp.*] (a TOML key cannot be both an array and a table, hence the separate table).
+- Known harness names in v1: claude-code, pi. Unknown or unselected harness names are errors.
+- Types a harness cannot use (agents on pi, per the adapters) are reported by check, not errors in the manifest.
+- Instruction fragments are assembled in list order.
+- Security: inline MCP servers are arbitrary commands. When a manifest was not authored on this machine (first apply, no lockfile) the apply flow treats inline servers as new executables and requires confirmation (see preview issue); automatic apply must never apply inline servers unattended.
+
+Go package API: LoadManifest(path) -> Manifest; Manifest.Entries() -> resolved list of (ref, harness set); Validate(library) -> []Problem.
+
 ## Open questions

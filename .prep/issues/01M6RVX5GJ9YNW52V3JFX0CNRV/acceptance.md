@@ -1,0 +1,5 @@
+- [ ] go test ./... passes offline with no access to the real home directory (tests set DAYPACK_HOME and HOME to temp dirs)
+- [ ] The sentinel-secret test exists and fails if a secret value is ever written into a project
+- [ ] A fake-adapter test proves shared-target and restricted-entry behaviour
+- [ ] Each required scenario in the body has at least one named test
+- [ ] A CI workflow runs vet, tests and lint on push

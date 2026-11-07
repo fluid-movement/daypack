@@ -1,0 +1,3 @@
+- [ ] Fragments are assembled in manifest list order into the daypack:begin/end section of AGENTS.md; text outside the markers is byte-identical after apply
+- [ ] Removing all fragments removes the section markers; a missing AGENTS.md is created only when at least one fragment is listed
+- [ ] The Claude Code mechanism for loading AGENTS.md is implemented per the research finding and checked in a fixture

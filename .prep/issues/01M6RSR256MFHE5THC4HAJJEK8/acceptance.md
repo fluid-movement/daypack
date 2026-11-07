@@ -1,0 +1,6 @@
+- [ ] library import --dry-run lists every skill, subagent and MCP server found in Claude Code user config (including ~/.claude.json local-scope entries) and Pi user config, with source path and target library name, and writes nothing
+- [ ] library import copies them into the library, deduplicating identical content and asking nothing: name conflicts with different content are reported and skipped
+- [ ] Plaintext token values found in MCP env/headers are moved to secrets.env and replaced with ${NAME} references; the sentinel-secret test passes
+- [ ] Plugin-provided items are excluded
+- [ ] After import it prints the list of original items now safe to remove, and never modifies or deletes harness config
+- [ ] Running import twice imports nothing the second time

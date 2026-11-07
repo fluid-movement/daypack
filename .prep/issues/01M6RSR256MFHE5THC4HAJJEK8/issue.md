@@ -2,6 +2,10 @@
 title: 'Initial setup: scan harnesses and import skills/MCP into the library'
 kind: code
 parent: 01M6RSQDN4E37HX2EM8F97SADA
+depends_on:
+  - 01M6RSR21N92V3W1HVT3TBWGCD
+  - 01M6RVX52JWVSGVS8C6QMHTH6A
+  - 01M6RVX5BR6J3T9KRKD8WXS548
 tags:
   - import
 priority: high

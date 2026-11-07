@@ -1,0 +1,4 @@
+- [ ] git worktree add in a repo with the hook and a library-only manifest produces a fully wired worktree without a manual apply
+- [ ] A manifest with inline MCP servers applies nothing for them and prints the notice line; the checkout succeeds
+- [ ] hook install refuses to overwrite an existing post-checkout hook and prints what to add
+- [ ] hook uninstall removes only daypack's hook

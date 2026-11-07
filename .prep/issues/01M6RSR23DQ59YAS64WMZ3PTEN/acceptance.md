@@ -1,0 +1,6 @@
+- [ ] library init creates the layout, a .gitignore with secrets.env, and refuses to overwrite an existing library
+- [ ] library add skill|mcp|fragment|agent creates a valid stub or imports from a path (skills copied as folders) and refuses duplicate names
+- [ ] library edit opens the artifact's files in $EDITOR (EDITOR unset gives a clear error)
+- [ ] library rename moves the artifact, fixes frontmatter name where needed, and prints that manifests using the old name will fail until updated
+- [ ] library remove deletes the artifact and prints the same warning
+- [ ] library doctor validates the whole library and lists problems with file paths; exit 3 when problems exist

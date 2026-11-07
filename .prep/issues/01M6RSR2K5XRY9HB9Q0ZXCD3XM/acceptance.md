@@ -1,0 +1,5 @@
+- [ ] A clean applied project reports ok for every entry and exits 0
+- [ ] Editing a managed file, deleting a managed symlink, and breaking a library link are each reported with the right state and exit 3
+- [ ] A managed path tracked by git, or missing from the exclude block, is reported as an error
+- [ ] Referencing an unset env var in an MCP definition is reported by variable name only; the value is never printed
+- [ ] With pi selected, status mentions the Pi project trust requirement

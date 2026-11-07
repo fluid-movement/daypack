@@ -1,0 +1,4 @@
+- [ ] init creates daypack.toml with selected harnesses and a commented skeleton; init --from <path> copies another project's manifest; init refuses to overwrite an existing manifest
+- [ ] add skill:svelte appends to the right list preserving comments and order; add mcp:context7 --only claude-code writes the table form; adding an existing entry updates its harnesses instead of duplicating
+- [ ] remove deletes the entry; removing something not present is an error with a hint
+- [ ] Neither add nor remove applies anything; the output suggests running apply

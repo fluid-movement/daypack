@@ -1,0 +1,7 @@
+- [ ] Apply on an empty project with a valid manifest creates all items and a lockfile; a second apply makes zero filesystem changes (verified by comparing file trees and mtimes)
+- [ ] Removing a skill, an MCP server and a harness from the manifest and re-applying removes exactly their items, and shared targets still used by another harness are kept
+- [ ] An unresolvable manifest entry is skipped and reported, previously applied items stay, and the exit code is non-zero
+- [ ] Collisions and drift are never overwritten without --adopt / --force, and the report names the path and the reason
+- [ ] --dry-run writes nothing (no files, no lockfile, no exclude block) and lists the plan
+- [ ] Operation order is deterministic: the same inputs give identical plan output across runs
+- [ ] A shared target (.agents/skills used by pi and a fake second harness) is reconciled once

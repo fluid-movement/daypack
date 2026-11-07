@@ -2,6 +2,9 @@
 title: 'Library CLI: init, add, edit, rename, remove'
 kind: code
 parent: 01M6RSQDN4E37HX2EM8F97SADA
+depends_on:
+  - 01M6RSR21N92V3W1HVT3TBWGCD
+  - 01M6RVX5E50998CXQHV942P828
 tags:
   - library
 priority: high

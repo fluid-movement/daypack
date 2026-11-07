@@ -3,6 +3,7 @@ title: 'Claude Code: project-scoped subagents'
 kind: code
 parent: 01M6RSR1WEJADFBE7H43FG9Y19
 depends_on:
+  - 01M6RSR2MYB5VPVPS8WHTWTDQG
   - 01M6RVX52JWVSGVS8C6QMHTH6A
 tags:
   - claude-code

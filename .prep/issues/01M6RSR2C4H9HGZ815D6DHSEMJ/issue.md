@@ -2,6 +2,8 @@
 title: 'Manifest authoring commands: init, copy from project, add/remove'
 kind: code
 parent: 01M6RSR1PXHKSP1819E2VPNBFE
+depends_on:
+  - 01M6RSR28PM3XB3VXM0HDPJ61N
 tags:
   - manifest
 ---

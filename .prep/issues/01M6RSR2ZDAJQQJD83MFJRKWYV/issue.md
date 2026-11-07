@@ -3,8 +3,7 @@ title: 'Claude Code adapter: MCP servers without plaintext secrets'
 kind: code
 parent: 01M6RSR1TPWPNN1MC4EJY0D4M2
 depends_on:
-  - 01M6RTJB4VVF8M46JAZ5RA32P0
-  - 01M6RVX52JWVSGVS8C6QMHTH6A
+  - 01M6RSR2MYB5VPVPS8WHTWTDQG
 tags:
   - claude-code
 priority: high

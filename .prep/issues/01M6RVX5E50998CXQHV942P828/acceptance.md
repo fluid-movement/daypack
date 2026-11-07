@@ -1,0 +1,5 @@
+- [ ] Every command accepts --json and its stdout parses as a single JSON object with ok and command fields
+- [ ] Exit codes 0/1/2/3 behave as defined in status, apply and usage-error cases, covered by tests
+- [ ] cmd/ contains no business logic: operations are testable by calling the packages without Cobra
+- [ ] With stdin not a TTY, no command blocks waiting for input
+- [ ] --library and --project overrides are honoured by every command

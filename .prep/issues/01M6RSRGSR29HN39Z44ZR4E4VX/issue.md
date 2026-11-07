@@ -3,6 +3,7 @@ title: Shared .agents/skills adapter (used by Pi and other harnesses)
 kind: code
 parent: 01M6RSR1Y6XR8HFX1YFTZSWGRR
 depends_on:
+  - 01M6RSR2MYB5VPVPS8WHTWTDQG
   - 01M6RVX5BR6J3T9KRKD8WXS548
 tags:
   - pi

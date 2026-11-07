@@ -1,0 +1,4 @@
+- [ ] list shows all library artifacts grouped by type with description; entries used by the current project are marked with their harnesses
+- [ ] list works outside a project (no marks)
+- [ ] A manifest referencing an unknown name fails validation with the closest-name suggestion
+- [ ] list --json returns the same data

@@ -1,0 +1,8 @@
+- [ ] A fresh apply writes .daypack/lock.toml listing every created item with kind, path and hash
+- [ ] Re-running apply with no manifest change leaves the lockfile and every managed file byte-identical
+- [ ] A pre-existing file or JSON key not in the lockfile is never modified; apply reports a collision and exits non-zero unless --adopt is given
+- [ ] Editing a managed file by hand is reported as drift and is not overwritten or deleted without --force
+- [ ] Removing an entry from the manifest removes exactly its items and its lockfile rows, and leaves hand-written siblings untouched
+- [ ] info/exclude contains a daypack block with exactly the managed untracked paths plus .daypack/, and works from a git worktree
+- [ ] A JSON file with unknown keys and custom indentation round-trips with only daypack-owned keys changed
+- [ ] A killed process between operations leaves a valid lockfile that matches what is on disk (tested with fault injection)

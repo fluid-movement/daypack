@@ -5,6 +5,6 @@ tags:
   - packaging
 ---
 
-NFR-2. Single tool, easy install on a new machine, no runtime deps. Includes name availability result (open question 8) for release channels.
+NFR-2. Single static Go binary. Releases built with GoReleaser for macOS and Linux (arm64, amd64) on tag via GitHub Actions; 'go install' works from the module path; install instructions in the README. A Homebrew tap is post-v1. Resolve the name-availability check (GitHub, npm, Homebrew) before the first release.
 
 ## Open questions

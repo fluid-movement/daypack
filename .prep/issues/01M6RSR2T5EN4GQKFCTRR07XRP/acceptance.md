@@ -1,0 +1,5 @@
+- [ ] Library and inline MCP definitions may reference only ${VAR} names for secrets; this is enforced by the library validation rule
+- [ ] Import writes discovered tokens to <library-config>/secrets.env (mode 0600, outside any project) as NAME=value lines and replaces the value in the definition with ${NAME}
+- [ ] docs/secrets.md (or the library init docs) explains how to load secrets.env into the shell (e.g. a line for the shell profile), and 'daypack library doctor' warns if secrets.env is group/world readable
+- [ ] A source interface (reference -> read command) exists so keychain/Bitwarden can be added post-v1 without changing manifests
+- [ ] The library directory is git-synced, so 'library init' writes a .gitignore containing secrets.env, and 'library doctor' errors if secrets.env is tracked by git or not ignored (the only place a secret value may ever exist besides the user's environment)

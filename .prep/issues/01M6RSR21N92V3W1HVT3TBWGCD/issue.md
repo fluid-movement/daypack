@@ -2,11 +2,42 @@
 title: Library storage format and location
 kind: code
 parent: 01M6RSQDN4E37HX2EM8F97SADA
+depends_on:
+  - 01M6RSRR7P0GKP661AK1RHJK0A
 tags:
   - library
 priority: high
 ---
 
-Define the plain-file library layout in the tool's global config dir (git-versionable, NFR-5, NFR-2). Stable artifact names (FR-3). Covers all five artifact types: skills, MCP definitions, instruction fragments, subagents (hooks are post-v1).
+NFR-5, FR-3. The library is plain files in one directory, versionable in git and synced across machines. This issue defines the on-disk format and the Go package that reads, validates and resolves it. Language/format decisions: Go, TOML for daypack-owned files, native formats for skills/agents/fragments.
+
+Location: $DAYPACK_HOME if set, else $XDG_CONFIG_HOME/daypack, else ~/.config/daypack.
+
+Layout:
+```
+<library>/
+  skills/<name>/SKILL.md (+ any files; an Agent Skills folder stored as-is)
+  mcp/<name>.toml
+  fragments/<name>.md        (optional frontmatter: description)
+  agents/<name>.md           (Claude Code subagent file as-is: frontmatter name+description)
+```
+Artifact references are written type:name with type one of skill, mcp, fragment, agent. Names: lowercase letters, digits and hyphens, 1-64 chars, unique per type. A skill's or agent's frontmatter name must equal its file/folder name (validated).
+
+MCP definition (mcp/<name>.toml), one schema also used for inline manifest definitions:
+```toml
+description = "Docs for Svelte"          # optional, shown by list
+type = "stdio"                           # stdio | http
+command = "npx"                          # stdio only
+args = ["-y", "@sveltejs/mcp"]
+url = "https://example.com/mcp"          # http only
+env = { API_BASE = "https://x.test", API_KEY = "${EXAMPLE_API_KEY}" }   # stdio
+headers = { Authorization = "Bearer ${EXAMPLE_TOKEN}" }                 # http
+secrets = ["EXAMPLE_API_KEY"]            # env var names the server needs; used by check
+```
+Secret rule (decision: MCP secrets are references only): in env and headers a value is either a ${VAR} / ${VAR:-default} reference or a plain literal; a literal under a key whose name matches (?i)(key|token|secret|password|passwd|auth|credential) is a validation error telling the user to use a reference. Fields not valid for the declared type are errors.
+
+Go package API (used by CLI and adapters): Load(libraryPath) -> Library; Resolve(ref) -> Artifact (type, name, path, description, parsed MCP def); List(type); Validate() -> []Problem with file path and field. Unknown files in the library are ignored with a warning in doctor, not errors.
+
+Out of scope here: library write commands (library CLI issue), import, generated agent docs.
 
 ## Open questions

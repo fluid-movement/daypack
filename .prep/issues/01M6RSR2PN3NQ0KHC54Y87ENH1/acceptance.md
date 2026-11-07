@@ -1,0 +1,4 @@
+- [ ] Adapter returns one Symlink item per skill entry for claude-code, with target ID claude-skills-dir, verified by a golden test
+- [ ] Apply on a fixture project creates .claude/skills/<name> symlinks resolving to the library folder and Claude Code can read SKILL.md through them (manual check recorded)
+- [ ] A skill restricted to pi produces no claude-skills-dir item
+- [ ] Removing the skill from the manifest removes the symlink and its exclude entry

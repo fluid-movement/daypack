@@ -2,6 +2,9 @@
 title: 'Discoverability: list available artifacts, validate manifest, editor schema'
 kind: code
 parent: 01M6RSR1PXHKSP1819E2VPNBFE
+depends_on:
+  - 01M6RSR28PM3XB3VXM0HDPJ61N
+  - 01M6RSR21N92V3W1HVT3TBWGCD
 tags:
   - manifest
 priority: high

@@ -6,6 +6,6 @@ tags:
   - decision
 ---
 
-Open question 8. Check daypack and agree a fallback name.
+Open question 8. Check whether 'daypack' is usable on GitHub, npm and Homebrew and agree a fallback if not. Distribution is a Go binary via GitHub releases (npm is not a channel).
 
 ## Open questions

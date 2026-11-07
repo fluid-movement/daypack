@@ -3,13 +3,21 @@ title: Status and drift report
 kind: code
 parent: 01M6RSR1RXHMJNSEFMHSYVQ4E0
 depends_on:
-  - 01M6RSRR7P0GKP661AK1RHJK0A
+  - 01M6RSR2DX646G82T1EYZBD071
+  - 01M6RSR2HBPNRJ10XJVE01GG3P
 tags:
   - apply
 ---
 
-FR-14. Report what the project manifest lists, what is wired in, and drift (manual edits, broken or missing items).
+FR-14. 'daypack status' (alias check) reports the state of the current project without changing anything. It computes the same plan as apply --dry-run and adds health checks.
 
-Decision: generated harness config is git-excluded, never committed (issue 01M6RSRR7P0GKP661AK1RHJK0A). Status/check must also verify that every managed path is git-excluded and that no managed file is tracked by git; violations are reported as errors.
+Reports:
+- Per entry and harness: ok | pending (would be created/changed/removed) | drift | collision | unresolved | unsupported.
+- Dangling symlinks into the library and managed paths missing on disk.
+- Git hygiene (decision: generated config is git-excluded): every managed untracked path is listed in the exclude block, and no managed untracked path is tracked by git; violations are errors.
+- Unset environment variables referenced by the project's MCP servers (names only, never values).
+- Pi trust: when the pi harness is selected, note that project .pi/mcp.json and .agents/skills load only after Pi project trust is granted.
+- Which other known harnesses will also read a shared target (e.g. a pi-only skill visible to Codex via .agents/skills).
+Exit 0 when everything is ok; 3 when anything needs attention (pending, drift, collision, unresolved, git hygiene error, unset variable).
 
 ## Open questions

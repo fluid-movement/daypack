@@ -1,0 +1,32 @@
+---
+title: 'Decide: MCP secret handling (references only, command-template sources)'
+kind: decision
+parent: 01M6RSR1TPWPNN1MC4EJY0D4M2
+tags:
+  - secrets
+priority: high
+---
+
+Applies to MCP servers only. Generated MCP config contains only references to secrets, never values, and never depends on the daypack binary at runtime (NFR-4).
+
+Established patterns (researched, Claude Code MCP docs):
+- `${VAR}` / `${VAR:-default}` expansion in command, args, env, url, headers of `.mcp.json`; unset vars send the literal text and warn in `claude mcp list`.
+- Claude Code blanks some names in remote url/headers (ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, AWS_BEARER_TOKEN_BEDROCK, HTTPS_PROXY, NPM_TOKEN); secrets for those need a differently named variable.
+- Secret-manager injection at launch (`op run -- <server>` style) wraps the server command so the value exists only in the server process.
+- `headersHelper` for remote servers: a command printing auth headers as JSON, run per connection, re-run on 401/403.
+- OAuth servers: Claude Code stores tokens itself; daypack does nothing.
+- Local scope (`~/.claude.json`) holds plaintext on disk; not used for secrets.
+
+Decision: a secret source is a command template.
+- env source: `${VAR}` reference (stdio and remote).
+- keychain, Bitwarden, 1Password sources: stdio servers get their command wrapped with the source's read command; remote servers get `headersHelper` running it.
+- The same read command is used by the secrets verification check (FR-19).
+- No secret value is ever written to a project file (success criterion 4).
+
+Known limits: Bitwarden CLI needs an unlocked session (BW_SESSION). Pi equivalents of headersHelper must be checked in the Pi MCP adapter work.
+
+## Knowledge
+
+- decision: MCP secrets: references only; sources are command templates (/decisions/01M6RTJWS453327AP3MHFQ67P0.md)
+
+## Open questions

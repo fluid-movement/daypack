@@ -1,0 +1,21 @@
+---
+title: 'Research: Pi project conventions'
+kind: research
+parent: 01M6RSR1RXHMJNSEFMHSYVQ4E0
+tags:
+  - research
+priority: high
+---
+
+Document, verified against current Pi docs and a real install, how Pi reads config. Output: a knowledge entry that the Pi and shared-skills adapter issues cite.
+
+Known from the user: both paths work at user AND project level: skills in .agents/skills/ (shared Agent Skills directory) and MCP config in .pi/mcp.json style location (user: ~/.pi/agent/mcp.json; confirm the exact project-level path). Pi also reads AGENTS.md.
+
+To verify and record:
+- Exact project-level paths and precedence between user and project level.
+- Which other harnesses read project .agents/skills/ and AGENTS.md.
+- Symlink support for skills.
+- MCP file format and whether environment variable expansion (${VAR}) works.
+- Any header/command helper equivalent to Claude Code's headersHelper.
+
+## Open questions

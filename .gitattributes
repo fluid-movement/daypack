@@ -1,0 +1,2 @@
+.prep/**/history.md merge=union
+.prep/knowledge/**/index.md merge=union

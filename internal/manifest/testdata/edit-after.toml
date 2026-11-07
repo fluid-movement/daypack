@@ -1,0 +1,11 @@
+# Project settings
+version = 1
+harnesses = ["claude-code", "pi"] # keep both
+
+# Ordered instructions
+fragments = ["second", { name = "first", harnesses = ["pi"] }, { name = "last", harnesses = ["claude-code"] }] # keep this comment
+skills = [ 'existing', ]
+
+[inline.mcp.local]
+type = "stdio"
+command = "echo"

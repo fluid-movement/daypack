@@ -1,0 +1,104 @@
+package manifest
+
+import (
+	"fmt"
+	"path/filepath"
+	"reflect"
+	"strings"
+	"testing"
+
+	"github.com/fluid-movement/daypack/internal/library"
+)
+
+func testLibrary(t *testing.T) *library.Library {
+	t.Helper()
+	dir := isolated(t)
+	write(t, filepath.Join(dir, "mcp", "shared.toml"), "type = 'stdio'\ncommand = 'echo'\n")
+	write(t, filepath.Join(dir, "mcp", "broken.toml"), "type = 'stdio'\n")
+	for _, name := range []string{"cat", "cot"} {
+		write(t, filepath.Join(dir, "fragments", name+".md"), "---\ndescription: Test\n---\nContent\n")
+	}
+	lib, err := library.Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return lib
+}
+func TestValidation(t *testing.T) {
+	lib := testLibrary(t)
+	cases := []struct{ name, text, want string }{
+		{"unknown harness", "version=1\nharnesses=['unknown']", "unknown harness"},
+		{"duplicate harness", "version=1\nharnesses=['pi','pi']", "duplicate harness"},
+		{"empty selection", "version=1\nharnesses=[]", "must not be empty"},
+		{"subset", "version=1\nharnesses=['pi']\nmcp=[{name='shared',harnesses=['claude-code']}]", "mcp:shared.harnesses"},
+		{"unknown restriction", header + "mcp=[{name='shared',harnesses=['unknown']}]", "unknown harness"},
+		{"empty restriction", header + "mcp=[{name='shared',harnesses=[]}]", "must not be empty"},
+		{"duplicate restriction", header + "mcp=[{name='shared',harnesses=['pi','pi']}]", "duplicate harness"},
+		{"name", header + "mcp=['Bad_Name']", "1-64"},
+		{"duplicate", header + "mcp=['shared','shared']", "duplicate artifact"},
+		{"missing tie", header + "fragments=['cut']", "fragment:cut not found (closest: cat)"},
+		{"absent type", header + "skills=['absent']", "skill:absent not found"},
+		{"invalid artifact", header + "mcp=['broken']", "mcp:broken has library validation errors"},
+		{"collision unselected", header + "[inline.mcp.shared]\ntype='stdio'\ncommand='echo'", "collides"},
+		{"inline subset", "version=1\nharnesses=['pi']\n[inline.mcp.local]\ntype='stdio'\ncommand='echo'\nharnesses=['claude-code']", "inline.mcp.local.harnesses"},
+		{"inline empty", header + "[inline.mcp.local]\ntype='stdio'\ncommand='echo'\nharnesses=[]", "must not be empty"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			m := loadText(t, tc.text)
+			problems := m.Validate(lib)
+			if !strings.Contains(fmt.Sprint(problems), tc.want) {
+				t.Fatalf("want %q in %v", tc.want, problems)
+			}
+			if !reflect.DeepEqual(problems, m.Validate(lib)) {
+				t.Fatal("nondeterministic diagnostics")
+			}
+		})
+	}
+	m := loadText(t, header+"mcp=['shared']\nfragments=['cot','cat']")
+	if p := m.Validate(lib); len(p) != 0 {
+		t.Fatal(p)
+	}
+	if p := m.Validate(nil); !strings.Contains(fmt.Sprint(p), "library is required") {
+		t.Fatal(p)
+	}
+	// Capabilities belong to adapters: an agent aimed at Pi is not a manifest
+	// configuration error (the empty library still reports its missing name).
+	m = loadText(t, "version=1\nharnesses=['pi']\nagents=['reviewer']")
+	if p := m.Validate(lib); len(p) != 1 || !strings.Contains(p[0].Message, "not found") {
+		t.Fatal(p)
+	}
+}
+
+func TestInlineMCPParity(t *testing.T) {
+	lib := testLibrary(t)
+	cases := []string{
+		"type='stdio'\ncommand='echo'\nenv={API_KEY='${API_KEY}'}",
+		"type='stdio'\ncommand='echo'\nenv={API_KEY='never-echo-this'}",
+		"type='http'\nurl='https://example.test'\nheaders={Authorization='never-echo-this'}",
+		"type='stdio'\ncommand='echo'\nurl=''",
+		"type='stdio'\ncommand='echo'\nheaders={}",
+		"type='http'\nurl='https://example.test'\ncommand=''\nargs=[]\nenv={}",
+		"type='stdio'\ncommand='echo'\nextra='never-echo-this'",
+		"type='stdio'\ncommand=17",
+		"type='stdio'\ncommand='echo'\nargs=['sk-example-secret']",
+		"type='http'\nurl='https://example.test/?token=never-echo-this'",
+		"type='stdio'\ncommand='echo'\nenv={VALUE='${broken'}",
+	}
+	for i, payload := range cases {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			m := loadText(t, header+"[inline.mcp.local]\n"+payload)
+			_, want := library.ParseMCP([]byte(payload), m.path)
+			for i := range want {
+				want[i].Field = "inline.mcp.local." + want[i].Field
+			}
+			got := m.Validate(lib)
+			if !reflect.DeepEqual(got, want) {
+				t.Fatalf("got %v; want %v", got, want)
+			}
+			if strings.Contains(fmt.Sprint(got), "never-echo-this") {
+				t.Fatal("secret leaked in diagnostics")
+			}
+		})
+	}
+}

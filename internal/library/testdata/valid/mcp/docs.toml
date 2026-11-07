@@ -1,0 +1,5 @@
+description = "Documentation server"
+type = "stdio"
+command = "${RUNNER:-npx}"
+args = ["-y", "docs-server", "${OPTION}"]
+env = { API_BASE = "https://example.test", API_KEY = "${API_KEY}" }

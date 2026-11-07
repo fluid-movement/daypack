@@ -1,9 +1,9 @@
-- [ ] Library loads from DAYPACK_HOME, then XDG_CONFIG_HOME/daypack, then ~/.config/daypack, and a missing library gives a clear error pointing at 'daypack library init'
-- [ ] Resolve('skill:svelte') returns the skill folder path and its frontmatter description; unknown names return a typed not-found error that carries the closest existing name
-- [ ] An MCP definition with a literal value under a secret-looking env/header key fails validation with the file, key and a hint to use ${VAR}
-- [ ] An MCP definition with command on an http type (or url on a stdio type) fails validation
-- [ ] Names violating the naming rules or duplicated within a type are reported by Validate with file paths
-- [ ] A skill whose frontmatter name differs from its folder name is reported by Validate
-- [ ] Unit tests cover each rule using fixture libraries; no test touches the real home directory
-- [ ] A skill without a non-empty frontmatter description fails Validate
-- [ ] Secret-looking values in args/url produce a warning naming the file and field
+- [x] Library loads from DAYPACK_HOME, then XDG_CONFIG_HOME/daypack, then ~/.config/daypack, and a missing library gives a clear error pointing at 'daypack library init'
+- [x] Resolve('skill:svelte') returns the skill folder path and its frontmatter description; unknown names return a typed not-found error that carries the closest existing name
+- [x] An MCP definition with a literal value under a secret-looking env/header key fails validation with the file, key and a hint to use ${VAR}
+- [x] An MCP definition with command on an http type (or url on a stdio type) fails validation
+- [x] Names violating the naming rules or duplicated within a type are reported by Validate with file paths
+- [x] A skill whose frontmatter name differs from its folder name is reported by Validate
+- [x] Unit tests cover each rule using fixture libraries; no test touches the real home directory
+- [x] A skill without a non-empty frontmatter description fails Validate
+- [x] Secret-looking values in args/url produce a warning naming the file and field

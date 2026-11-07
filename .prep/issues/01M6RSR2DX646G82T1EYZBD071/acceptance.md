@@ -1,9 +1,9 @@
-- [ ] Package-level: Lock.Save then Lock.Load round-trips every item kind (symlink, file, json-entry, json-array-element, md-section)
-- [ ] Package-level: Status() distinguishes ok, missing, drifted and collision for each item kind
-- [ ] Package-level: an existing item exactly equal to the desired item is adopted silently; an unowned item that differs is a collision
-- [ ] Package-level: removing an entry's items never touches hand-written siblings, other JSON keys, or text outside daypack markers
-- [ ] Package-level: JSON edits preserve unknown keys, key order, indentation and trailing newline (byte-diff test); hashes use canonical JSON
-- [ ] ExcludeBlock produces one block per project root, regenerates only its own block, and works from a git worktree
-- [ ] Path safety: lockfile or item paths containing '..', absolute paths, symlinked .daypack/, symlinked parent directories, or a git-tracked lock.toml are refused (one test each)
-- [ ] Tracked managed content that equals the desired content converges silently; one that differs from both lockfile hash and desired content is reported as drift
-- [ ] Atomic writes: files are written via temp file + rename in the same directory; the lockfile is rewritten after each batch of operations
+- [x] Package-level: Lock.Save then Lock.Load round-trips every item kind (symlink, file, json-entry, json-array-element, md-section)
+- [x] Package-level: Status() distinguishes ok, missing, drifted and collision for each item kind
+- [x] Package-level: an existing item exactly equal to the desired item is adopted silently; an unowned item that differs is a collision
+- [x] Package-level: removing an entry's items never touches hand-written siblings, other JSON keys, or text outside daypack markers
+- [x] Package-level: JSON edits preserve unknown keys, key order, indentation and trailing newline (byte-diff test); hashes use canonical JSON
+- [x] ExcludeBlock produces one block per project root, regenerates only its own block, and works from a git worktree
+- [x] Path safety: lockfile or item paths containing '..', absolute paths, symlinked .daypack/, symlinked parent directories, or a git-tracked lock.toml are refused (one test each)
+- [x] Tracked managed content that equals the desired content converges silently; one that differs from both lockfile hash and desired content is reported as drift
+- [x] Atomic writes: files are written via temp file + rename in the same directory; the lockfile is rewritten after each batch of operations

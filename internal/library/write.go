@@ -213,6 +213,6 @@ func stub(kind ArtifactType, name string) []byte {
 	case Fragment:
 		return []byte("# Instructions\n\nAdd instructions here.\n")
 	default:
-		return []byte(fmt.Sprintf("---\nname: %s\ndescription: New %s\n---\n\nAdd instructions here.\n", name, kind))
+		return []byte(fmt.Sprintf("---\nname: %q\ndescription: %q\n---\n\nAdd instructions here.\n", name, "New "+string(kind)))
 	}
 }

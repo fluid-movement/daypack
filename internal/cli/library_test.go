@@ -83,6 +83,36 @@ func TestLibraryCommands(t *testing.T) {
 	}
 	object(t, out, code, "daypack library doctor")
 }
+
+func TestLibraryAddYAMLNames(t *testing.T) {
+	root := libraryEnvironment(t)
+	for _, kind := range []library.ArtifactType{library.Skill, library.Agent} {
+		for _, name := range []string{"null", "-", "true", "123"} {
+			code, out, stderr := libraryInvoke(t, root, "add", string(kind), name)
+			if code != Success || stderr != "" {
+				t.Fatalf("add %s %q: code=%d, stdout=%s, stderr=%s", kind, name, code, out, stderr)
+			}
+			loaded, err := library.Load(root)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := loaded.Resolve(string(kind) + ":" + name); err != nil {
+				t.Fatal(err)
+			}
+		}
+		for _, name := range []string{"with:colon", "with: colon"} {
+			if code, _, _ := libraryInvoke(t, root, "add", string(kind), name); code != Usage {
+				t.Fatalf("add %s %q: code=%d, want usage error", kind, name, code)
+			}
+		}
+	}
+	if problems, err := library.Doctor(root); err != nil || len(problems) != 0 {
+		t.Fatalf("doctor: %v, %v", problems, err)
+	}
+	if code, out, stderr := libraryInvoke(t, root, "doctor"); code != Success || stderr != "" {
+		t.Fatalf("doctor: code=%d, stdout=%s, stderr=%s", code, out, stderr)
+	}
+}
 func TestLibraryUsageDoesNotMutate(t *testing.T) {
 	root := libraryEnvironment(t)
 	for _, args := range [][]string{{"init", "extra"}, {"add", "skill"}, {"add", "invalid", "x"}, {"add", "agent", "../outside"}, {"remove", "agent"}, {"rename", "skill", "old", "Bad"}} {

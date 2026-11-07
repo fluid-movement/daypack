@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
 func mutationRoot(t *testing.T) string {
@@ -92,6 +94,44 @@ func TestMutationStubsAndImports(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestStubFrontmatterStrings(t *testing.T) {
+	for _, kind := range []ArtifactType{Skill, Agent} {
+		for _, name := range []string{"null", "-", "true", "123", "with:colon", "with: colon", `with"quote\slash`} {
+			t.Run(string(kind)+"/"+name, func(t *testing.T) {
+				data := stub(kind, name)
+				front := bytes.Split(data, []byte("---\n"))[1]
+				var fields map[string]any
+				if err := yaml.Unmarshal(front, &fields); err != nil {
+					t.Fatal(err)
+				}
+				if fields["name"] != name || fields["description"] != "New "+string(kind) {
+					t.Fatalf("frontmatter did not preserve strings: %#v", fields)
+				}
+				if description, problems := metadata(data, "stub.md", kind, name); len(problems) != 0 || description != "New "+string(kind) {
+					t.Fatalf("metadata: %q, %v", description, problems)
+				}
+			})
+		}
+	}
+}
+
+func TestMutationStubYAMLNames(t *testing.T) {
+	for _, kind := range []ArtifactType{Skill, Agent} {
+		for _, name := range []string{"null", "-", "true", "123"} {
+			t.Run(string(kind)+"/"+name, func(t *testing.T) {
+				root := mutationRoot(t)
+				if _, err := Add(root, AddOptions{Type: kind, Name: name}); err != nil {
+					t.Fatal(err)
+				}
+				resolves(t, root, kind, name)
+				if problems, err := Doctor(root); err != nil || len(problems) != 0 {
+					t.Fatalf("doctor: %v, %v", problems, err)
+				}
+			})
+		}
+	}
+}
 func TestInitRefusesExisting(t *testing.T) {
 	root := mutationRoot(t)
 	for _, path := range []string{root, filepath.Join(root, "empty"), filepath.Join(root, "file"), filepath.Join(root, "dangling")} {
@@ -120,7 +160,7 @@ func TestInitRefusesExisting(t *testing.T) {
 }
 func TestMutationRejectedInputs(t *testing.T) {
 	root := mutationRoot(t)
-	for _, name := range []string{"../escape", "", "Upper", strings.Repeat("a", 65), "a/b"} {
+	for _, name := range []string{"../escape", "", "Upper", strings.Repeat("a", 65), "a/b", "with:colon", "with: colon"} {
 		if _, err := Add(root, AddOptions{Type: Skill, Name: name}); err == nil {
 			t.Fatalf("accepted %q", name)
 		}

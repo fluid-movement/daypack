@@ -1,0 +1,8 @@
+{
+	"handwritten" : { "keep": true },
+	"mcpServers" : {
+		"manual": {"command":"mine"},
+		"managed.name": { "command": "old" }
+	},
+	"enabled": ["manual", "managed"]
+}

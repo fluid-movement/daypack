@@ -1,0 +1,2 @@
+create .agents/skills/testing
+create .test/skills/testing

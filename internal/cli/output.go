@@ -39,9 +39,10 @@ func (e *Failure) Unwrap() error { return e.Cause }
 func oneLine(s string) string { return strings.Join(strings.Fields(s), " ") }
 
 func diagnostic(w io.Writer, cause, hint string) {
-	fmt.Fprintln(w, oneLine(cause))
+	// Diagnostics are best-effort; write failures must not change the exit code.
+	_, _ = fmt.Fprintln(w, oneLine(cause))
 	if hint != "" {
-		fmt.Fprintln(w, "Hint: "+oneLine(hint))
+		_, _ = fmt.Fprintln(w, "Hint: "+oneLine(hint))
 	}
 }
 

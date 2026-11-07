@@ -1,0 +1,5 @@
+- [ ] just --list shows every recipe with a one-line description
+- [ ] just build produces bin/daypack, bin/ is git-ignored, and the binary runs
+- [ ] just install copies the binary to ${DAYPACK_INSTALL_DIR:-$HOME/.local/bin}, creates the directory if needed, warns when it is not on PATH, and just uninstall removes it (verified with DAYPACK_INSTALL_DIR pointing at a temp directory, never the real home)
+- [ ] just test, test-race, vet, fmt, check and ci run and fail when the code is broken or unformatted
+- [ ] just lint prints a clear message when golangci-lint is missing instead of a shell error

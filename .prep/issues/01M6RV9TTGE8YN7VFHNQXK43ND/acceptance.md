@@ -5,3 +5,8 @@
 - [ ] list shows library artifacts grouped by type (skill, mcp, fragment, agent) in a fixed order with name and one-line description from artifact metadata; project-used entries are marked with their effective harnesses
 - [ ] list works outside a project (no daypack.toml found): exit 0, no marks; with a missing library it exits 1 with the library init hint
 - [ ] list [type] filters to one type; an unknown type exits 2 with a usage hint listing valid types
+- [ ] Inline MCP servers appear in the mcp group as project-local (source project) and never when outside a project
+- [ ] list --json emits the standard envelope with items carrying type, name, description, source, used, harnesses; same data as text output
+- [ ] Manifest validation reports an unknown library name with Hint 'did you mean type:closest?' and an unknown harness name with a closest-harness hint; harness not selected in the manifest and inline/library name collisions remain errors; no duplicate validator is added
+- [ ] A project whose manifest has validation errors still lists the library and exits 3 with the problems in the result
+- [ ] Tests use internal/testutil fixtures (RunCLI, NewFixture) and cover the cases in the context; go test ./... and go vet ./... pass; library and secrets are never modified by list

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/fluid-movement/daypack/internal/adapters/contract"
+	"github.com/fluid-movement/daypack/internal/adapters/instructions"
 	"github.com/fluid-movement/daypack/internal/adapters/skilldir"
 	"github.com/fluid-movement/daypack/internal/library"
 )
@@ -19,11 +20,12 @@ var _ contract.Adapter = (*Adapter)(nil)
 func New() *Adapter           { return &Adapter{} }
 func (*Adapter) Name() string { return "pi" }
 func (*Adapter) Supports(t contract.ArtifactType) bool {
-	return t == library.Skill || t == library.MCP
+	return t == library.Skill || t == library.MCP || t == library.Fragment
 }
 func (*Adapter) Targets() []contract.Target {
 	return []contract.Target{
 		skilldir.AgentsTarget(),
+		instructions.Target(),
 		{ID: contract.PiMCPJSON, Root: ".pi/mcp.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
 	}
 }
@@ -33,6 +35,12 @@ func (a *Adapter) Desired(e contract.Entry, _ contract.Project) ([]contract.Item
 		return skilldir.Desired(e, skilldir.AgentsTarget())
 	case library.MCP:
 		return mcpItems(e)
+	case library.Fragment:
+		item, err := instructions.FragmentItem(e)
+		if err != nil {
+			return nil, err
+		}
+		return []contract.Item{item}, nil
 	}
 	return nil, nil
 }

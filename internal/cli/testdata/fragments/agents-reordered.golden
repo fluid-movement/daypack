@@ -1,0 +1,13 @@
+top
+<!-- daypack:begin fragment:beta -->
+Beta rules.
+<!-- daypack:end fragment:beta -->
+between one
+<!-- daypack:begin fragment:alpha -->
+Alpha changed.
+<!-- daypack:end fragment:alpha -->
+between two
+<!-- daypack:begin fragment:conventions -->
+Keep tests offline.
+<!-- daypack:end fragment:conventions -->
+bottom

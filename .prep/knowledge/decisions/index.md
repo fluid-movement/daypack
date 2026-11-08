@@ -26,3 +26,4 @@
 * [Lint gate for issue checks](/decisions/01M6VRJRETDRF14MCM13HMJ1NR.md) - golangci-lint is the gate; errcheck -blank applies only to code the issue touches
 * [Implementation delegation: Codex first, Claude as fallback](/decisions/01M6X31FKQN5D2BV3PEA6QWMW2.md) - Codex first; Claude subagents when Codex is exhausted; serialize issues touching the same package
 * [Merge verified code while test-coverage follow-ups stay open](/decisions/01M6X59EKRGCF1TSBAJPBSHR9F.md) - Verified behavior plus green gates merges; test-thinness findings go to a follow-up branch with the issue left open
+* [Fragment sections reconcile per file; bridge uses reserved ref](/decisions/01M6X69C4D8TW7ME9EYKQMSK1K.md) - Ordered ReconcileSections in lock; CLAUDE.md bridge via ProjectAdapter with ref fragment:@agents-md

@@ -10,6 +10,7 @@ import "github.com/fluid-movement/daypack/internal/adapters/contract"
 var readers = map[string][]string{
 	contract.AgentsSkillsDir:   {"codex", "cursor", "gemini-cli", "github-copilot", "opencode", "pi"},
 	contract.AgentsMD:          {"codex", "cursor", "github-copilot", "opencode", "pi"},
+	contract.ClaudeMD:          {"claude-code"},
 	contract.ClaudeSkillsDir:   {"claude-code"},
 	contract.ClaudeMCPJSON:     {"claude-code"},
 	contract.PiMCPJSON:         {"pi"},

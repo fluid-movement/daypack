@@ -79,6 +79,8 @@ func (r *Reconciliation) candidate(i contract.Item) (lock.Item, error) {
 		v.Preserve = old.Preserve
 		v.Tracked = old.Tracked
 	}
+	// Committed exception: instruction sections are never git-excluded.
+	v.Tracked = v.Tracked || committedSection(v)
 	return v, nil
 }
 func (r *Reconciliation) addDesired(payload contract.Item, i lock.Item) error {

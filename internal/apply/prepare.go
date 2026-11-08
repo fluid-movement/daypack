@@ -133,6 +133,9 @@ func Build(ctx context.Context, root string, m *manifest.Manifest, lib *library.
 		r.diagnostic(u.Entry, u.Harness, plan.Unsupported, "artifact type is unsupported")
 		r.blocked[u.Entry] = true
 	}
+	if result.Items, err = r.shapeInstructions(m, result.Items); err != nil {
+		return nil, err
+	}
 	desired := lock.New()
 	r.desired = desired
 	for _, item := range result.Items {
@@ -174,6 +177,9 @@ func Build(ctx context.Context, root string, m *manifest.Manifest, lib *library.
 		if err = r.appendWork(work{item: old, observation: obs, op: operation(old, action, outcome, reason)}); err != nil {
 			return nil, err
 		}
+	}
+	if err = r.finishSections(); err != nil {
+		return nil, err
 	}
 	if err = r.gate(); err != nil {
 		return nil, err

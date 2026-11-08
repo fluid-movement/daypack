@@ -57,6 +57,21 @@ type Adapter interface {
 	Notes(Project) []Note
 }
 
+// ProjectAdapter is an optional adapter extension for items that depend on the
+// whole selection rather than on one entry, such as the CLAUDE.md import bridge.
+// It receives only the entries whose effective harnesses include the adapter.
+type ProjectAdapter interface {
+	DesiredProject(entries []Entry, project Project) ([]Item, error)
+}
+
+// BridgeEntry is the reserved ownership reference of the single CLAUDE.md
+// import bridge. Library names cannot contain "@", so it never collides with a
+// real fragment, and its "fragment" type prefix satisfies target type checks.
+const BridgeEntry = "fragment:@agents-md"
+
+// BridgeMarker names the managed CLAUDE.md section holding the import.
+const BridgeMarker = "agents-md-import"
+
 // ItemKind uses the ownership package's vocabulary without adding lock state
 // (tracking, hashes, or preservation decisions) to adapter output.
 type ItemKind = lock.Kind

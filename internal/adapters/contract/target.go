@@ -23,6 +23,7 @@ const (
 	ClaudeSkillsDir   = "claude-skills-dir"
 	AgentsSkillsDir   = "agents-skills-dir"
 	AgentsMD          = "agents-md"
+	ClaudeMD          = "claude-md"
 	ClaudeMCPJSON     = "claude-mcp-json"
 	PiMCPJSON         = "pi-mcp-json"
 	ClaudeMCPApproval = "claude-mcp-approval"

@@ -11,6 +11,7 @@ import (
 	"sort"
 
 	"github.com/fluid-movement/daypack/internal/adapters/contract"
+	"github.com/fluid-movement/daypack/internal/library"
 	"github.com/fluid-movement/daypack/internal/lock"
 )
 
@@ -129,6 +130,39 @@ func (r *Registry) Desired(entries []contract.Entry, project contract.Project) (
 			}
 		}
 	}
+	for _, name := range r.Names() {
+		pa, ok := r.adapters[name].(contract.ProjectAdapter)
+		if !ok || !selected[name] {
+			continue
+		}
+		var effective []contract.Entry
+		for _, entry := range entries {
+			if (entry.Harnesses == nil || slices.Contains(entry.Harnesses, name)) && r.adapters[name].Supports(entry.Artifact.Type) {
+				effective = append(effective, contract.CloneEntry(entry))
+			}
+		}
+		p := project
+		p.Harnesses = slices.Clone(project.Harnesses)
+		items, err := pa.DesiredProject(effective, p)
+		if err != nil {
+			return Result{}, fmt.Errorf("adapter %q rendering project items failed", name)
+		}
+		for _, original := range items {
+			item, err := r.validateProjectItem(name, original)
+			if err != nil {
+				return Result{}, err
+			}
+			owned := lock.Item{Target: item.Target, Entry: item.Entry, Kind: item.Kind, Path: item.Path, Marker: item.Marker}
+			if _, exists := ownership.Find(owned); exists {
+				return Result{}, fmt.Errorf("duplicate physical item for target %q project item", item.Target)
+			}
+			if err := ownership.Put(owned); err != nil {
+				return Result{}, fmt.Errorf("physical item conflict for target %q project item", item.Target)
+			}
+			result.Items = append(result.Items, item)
+			used[item.Target] = true
+		}
+	}
 	for _, t := range r.Targets() {
 		if used[t.ID] {
 			result.Targets = append(result.Targets, t)
@@ -204,5 +238,18 @@ func (r *Registry) validateItem(name string, entry contract.Entry, item contract
 	default:
 		return fail()
 	}
+	return item, nil
+}
+
+// validateProjectItem accepts only the reserved bridge section on a declared
+// target; project-level items never claim per-entry references.
+func (r *Registry) validateProjectItem(name string, item contract.Item) (contract.Item, error) {
+	t, ok := r.declared[name][item.Target]
+	if !ok || item.Target != contract.ClaudeMD || item.Entry != contract.BridgeEntry || item.Kind != contract.MarkdownSection || item.Marker != contract.BridgeMarker ||
+		!slices.Contains(t.Types, library.Fragment) || !t.Contains(item.Path) || item.Link != "" || item.Key != "" || len(item.Value) != 0 ||
+		bytes.Contains(item.Bytes, []byte("<!-- daypack:")) {
+		return contract.Item{}, fmt.Errorf("adapter %q returned invalid project item for target %q", name, item.Target)
+	}
+	item.Bytes = append([]byte(nil), item.Bytes...)
 	return item, nil
 }

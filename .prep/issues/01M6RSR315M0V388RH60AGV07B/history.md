@@ -7,3 +7,5 @@
 - 2026-11-07T15:04:42Z edited by claude-code: requirement
 
 - 2026-11-07T15:04:42Z edited by claude-code: depends_on
+
+- 2026-11-08T09:02:03Z claude-code: Implemented, ready for check: fragments render into ordered AGENTS.md sections via extended Claude/Pi adapters with a CLAUDE.md @AGENTS.md bridge, ordered section reconciliation and tests for every criterion.

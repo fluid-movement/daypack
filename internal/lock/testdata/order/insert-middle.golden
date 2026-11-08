@@ -1,0 +1,12 @@
+pre
+<!-- daypack:begin a -->
+A
+<!-- daypack:end a -->
+<!-- daypack:begin x -->
+X
+<!-- daypack:end x -->
+mid
+<!-- daypack:begin b -->
+B
+<!-- daypack:end b -->
+post

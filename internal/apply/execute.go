@@ -1,6 +1,7 @@
 package apply
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -327,6 +328,7 @@ func (r *Reconciliation) executeBatch(p plan.Plan, batch []int) error {
 	mode := os.FileMode(0644)
 	data := []byte{}
 	s, err := os.Lstat(filepath.Join(r.root, path))
+	exists := err == nil
 	if err == nil {
 		if !s.Mode().IsRegular() {
 			return fmt.Errorf("shared container must be regular: %s", path)
@@ -343,6 +345,16 @@ func (r *Reconciliation) executeBatch(p plan.Plan, batch []int) error {
 	}
 	writing := false
 	for _, n := range batch {
+		if first.item.Kind == lock.MDSection {
+			// Markdown sections are reconciled once per file, in manifest order.
+			out, e := r.reconcileBatch(path, data, p.Operations[batch[0]].Action == plan.Remove)
+			if e != nil {
+				return e
+			}
+			writing = exists && !bytes.Equal(out, data) || !exists && len(out) > 0
+			data = out
+			break
+		}
 		o := p.Operations[n]
 		w := r.findWork(o)
 		switch {

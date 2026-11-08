@@ -22,15 +22,6 @@ func TestPureRenderer(t *testing.T) {
 	a := claudecode.New()
 	p := contract.Project{Root: filepath.Join(string(filepath.Separator), "nonexistent project"), Harnesses: []string{"claude-code"}}
 	cases := []testadapter.Case{{Entry: skill("testing"), Project: p, Supported: true}}
-	for _, typ := range []library.ArtifactType{library.Fragment} {
-		e := skill("testing")
-		e.Artifact.Type = typ
-		cases = append(cases, testadapter.Case{Entry: e, Project: p})
-		items, err := a.Desired(e, p)
-		if err != nil || len(items) != 0 || a.Supports(typ) {
-			t.Fatalf("unsupported %s: %v %v", typ, items, err)
-		}
-	}
 	testadapter.CheckAdapter(t, a, cases)
 	items, err := a.Desired(skill("testing"), p)
 	if err != nil {
@@ -46,6 +37,8 @@ func TestPureRenderer(t *testing.T) {
 		{ID: contract.ClaudeAgentsDir, Root: ".claude/agents", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Agent}},
 		{ID: contract.ClaudeMCPJSON, Root: ".mcp.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
 		{ID: contract.ClaudeMCPApproval, Root: ".claude/settings.local.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
+		{ID: contract.AgentsMD, Root: "AGENTS.md", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.Fragment}},
+		{ID: contract.ClaudeMD, Root: "CLAUDE.md", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.Fragment}},
 	}
 	if !reflect.DeepEqual(targets, expected) || a.Name() != "claude-code" || len(a.Notes(p)) != 1 {
 		t.Fatal("declarations")
@@ -113,15 +106,6 @@ func TestRegistrySelection(t *testing.T) {
 	e.Harnesses = []string{}
 	if _, err := r.Desired([]contract.Entry{e}, p); err == nil {
 		t.Fatal("accepted empty selection")
-	}
-	for _, typ := range []library.ArtifactType{library.Fragment} {
-		e := skill("testing")
-		e.Artifact.Type = typ
-		got, err := r.Desired([]contract.Entry{e}, p)
-		want := []contract.Unsupported{{Harness: "claude-code", Entry: e.Ref, Type: typ}}
-		if err != nil || len(got.Items) != 0 || !reflect.DeepEqual(got.Unsupported, want) {
-			t.Fatalf("unsupported: %v %v", got, err)
-		}
 	}
 }
 

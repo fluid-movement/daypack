@@ -1,0 +1,10 @@
+pre
+<!-- daypack:begin a -->
+A
+<!-- daypack:end a -->
+prose-1
+prose-2
+<!-- daypack:begin c -->
+C
+<!-- daypack:end c -->
+post

@@ -30,6 +30,7 @@ func TestDefaultRegistry(t *testing.T) {
 	}
 	wantTargets := append(a.Targets(), p.Targets()...)
 	slices.SortFunc(wantTargets, func(a, b contract.Target) int { return strings.Compare(a.ID, b.ID) })
+	wantTargets = slices.CompactFunc(wantTargets, func(a, b contract.Target) bool { return a.ID == b.ID })
 	if !reflect.DeepEqual(r.Targets(), wantTargets) {
 		t.Fatal(r.Targets())
 	}

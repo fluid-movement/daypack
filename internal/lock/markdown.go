@@ -16,45 +16,63 @@ func validateMarker(m string) error {
 
 var markers = regexp.MustCompile(`<!-- daypack:(begin|end) ([^\r\n]*?) -->`)
 
-func section(data []byte, name string) (int, int, bool, error) {
-	if err := validateMarker(name); err != nil {
-		return 0, 0, false, err
-	}
+// span locates one complete marker pair: begin marker, body and end marker.
+type span struct {
+	name                           string
+	begin, bodyStart, bodyEnd, end int
+}
+
+// parseSpans validates every daypack marker in the document and returns the
+// sections in file order. Duplicate, nested, unmatched or unclosed markers fail.
+func parseSpans(data []byte) ([]span, error) {
 	open := ""
 	seen := map[string]bool{}
-	start, end := 0, 0
-	found := false
+	var spans []span
+	var cur span
 	for _, m := range markers.FindAllSubmatchIndex(data, -1) {
 		kind := string(data[m[2]:m[3]])
 		n := string(data[m[4]:m[5]])
 		if err := validateMarker(n); err != nil {
-			return 0, 0, false, err
+			return nil, err
 		}
 		if kind == "begin" {
 			if open != "" || seen[n] {
-				return 0, 0, false, fmt.Errorf("nested or duplicate markers")
+				return nil, fmt.Errorf("nested or duplicate markers")
 			}
 			open = n
 			seen[n] = true
-			if n == name {
-				start = m[1]
-			}
+			cur = span{name: n, begin: m[0], bodyStart: m[1]}
 		} else {
 			if open != n {
-				return 0, 0, false, fmt.Errorf("unmatched markers")
+				return nil, fmt.Errorf("unmatched markers")
 			}
 			open = ""
-			if n == name {
-				end = m[0]
-				found = true
-			}
+			cur.bodyEnd, cur.end = m[0], m[1]
+			spans = append(spans, cur)
 		}
 	}
 	if open != "" {
-		return 0, 0, false, fmt.Errorf("unclosed marker")
+		return nil, fmt.Errorf("unclosed marker")
 	}
-	return start, end, found, nil
+	return spans, nil
 }
+
+func section(data []byte, name string) (int, int, bool, error) {
+	if err := validateMarker(name); err != nil {
+		return 0, 0, false, err
+	}
+	spans, err := parseSpans(data)
+	if err != nil {
+		return 0, 0, false, err
+	}
+	for _, s := range spans {
+		if s.name == name {
+			return s.bodyStart, s.bodyEnd, true, nil
+		}
+	}
+	return 0, 0, false, nil
+}
+
 func SetSection(data []byte, name string, body []byte) ([]byte, error) {
 	a, b, found, err := section(data, name)
 	if err != nil {

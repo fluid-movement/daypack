@@ -1,0 +1,4 @@
+[
+ {"Target":"agents-skills-dir","Entry":"skill:testing","Kind":"symlink","Path":".agents/skills/testing","Link":"<ROOT0>/skills/testing","Key":"","Marker":"","Bytes":null,"Value":null},
+ {"Target":"agents-skills-dir","Entry":"skill:another","Kind":"symlink","Path":".agents/skills/another","Link":"<ROOT0>/skills/another","Key":"","Marker":"","Bytes":null,"Value":null}
+]

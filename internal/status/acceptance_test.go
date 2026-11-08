@@ -201,7 +201,10 @@ func snapshotMeta(t *testing.T, root string, skipGit bool) meta {
 			return err
 		}
 		if skipGit && rel == ".git" {
-			return filepath.SkipDir
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
 		}
 		info, err := os.Lstat(p)
 		if err != nil {
@@ -370,9 +373,10 @@ func TestStatusWriterFailures(t *testing.T) {
 			}
 		}
 	}
+	write(t, filepath.Join(f.Project, ".claude/agents/reviewer.md"), "edited\n")
 	code := cli.Run(context.Background(), []string{"--quiet", "--library", f.Library, "--project", f.Project, "status"}, cli.IO{In: failingReader{t}, Out: failingWriter{}, Err: failingWriter{}})
-	if code != cli.Success && code != cli.Error {
-		t.Fatalf("unexpected code %d", code)
+	if code != cli.Error {
+		t.Fatalf("quiet attention with failing writer: code %d, want %d", code, cli.Error)
 	}
 }
 

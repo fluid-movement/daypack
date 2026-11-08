@@ -1,0 +1,85 @@
+[
+  {
+    "Item": {
+      "Bytes": null,
+      "Entry": "mcp:docs",
+      "Key": "mcpServers.docs",
+      "Kind": "json-entry",
+      "Link": "",
+      "Marker": "",
+      "Path": ".pi/mcp.json",
+      "Target": "pi-mcp-json",
+      "Value": null
+    },
+    "Server": {
+      "args": [
+        "second",
+        "first"
+      ],
+      "command": "echo",
+      "description": "Local docs",
+      "env": {
+        "MODE": "offline",
+        "TOKEN": "${DAYPACK_TEST_SECRET}"
+      },
+      "type": "stdio"
+    }
+  },
+  {
+    "Item": {
+      "Bytes": null,
+      "Entry": "mcp:docs",
+      "Key": "mcpServers.docs",
+      "Kind": "json-entry",
+      "Link": "",
+      "Marker": "",
+      "Path": ".pi/mcp.json",
+      "Target": "pi-mcp-json",
+      "Value": null
+    },
+    "Server": {
+      "description": "Remote docs",
+      "headers": {
+        "Authorization": "Bearer ${DAYPACK_TEST_SECRET}"
+      },
+      "type": "http",
+      "url": "https://example.invalid/mcp"
+    }
+  },
+  {
+    "Item": {
+      "Bytes": null,
+      "Entry": "mcp:docs",
+      "Key": "mcpServers.docs",
+      "Kind": "json-entry",
+      "Link": "",
+      "Marker": "",
+      "Path": ".pi/mcp.json",
+      "Target": "pi-mcp-json",
+      "Value": null
+    },
+    "Server": {
+      "command": "echo",
+      "description": "",
+      "type": "stdio"
+    }
+  },
+  {
+    "Item": {
+      "Bytes": null,
+      "Entry": "mcp:docs",
+      "Key": "mcpServers.docs",
+      "Kind": "json-entry",
+      "Link": "",
+      "Marker": "",
+      "Path": ".pi/mcp.json",
+      "Target": "pi-mcp-json",
+      "Value": null
+    },
+    "Server": {
+      "description": "",
+      "type": "http",
+      "url": "https://example.invalid/mcp"
+    }
+  }
+]

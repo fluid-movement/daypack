@@ -335,3 +335,58 @@ func TestAdapterInputsIsolated(t *testing.T) {
 		t.Fatal("caller input mutated")
 	}
 }
+
+func TestFieldUnsupportedErrors(t *testing.T) {
+	fields := []string{"env.Z", "command", "env.Z"}
+	a := testadapter.New("fixture", false)
+	a.Render = func(e contract.Entry, _ contract.Project) ([]contract.Item, error) {
+		if e.Ref == "skill:bad" {
+			// Even accompanying invalid items must be discarded on capability failure.
+			return []contract.Item{{Target: "invalid"}}, fmt.Errorf("wrapped: %w", &contract.UnsupportedError{Fields: fields})
+		}
+		return []contract.Item{{Target: contract.AgentsSkillsDir, Entry: e.Ref, Kind: contract.Symlink, Path: ".agents/skills/" + e.Artifact.Name, Link: e.Artifact.Path}}, nil
+	}
+	r := registry(t, a)
+	result := desired(t, r, []contract.Entry{entry("bad"), entry("good")}, "fixture")
+	if len(result.Items) != 1 || result.Items[0].Entry != "skill:good" || len(result.Unsupported) != 1 || !reflect.DeepEqual(result.Unsupported[0], contract.Unsupported{Harness: "fixture", Entry: "skill:bad", Type: library.Skill, Fields: []string{"command", "env.Z"}}) {
+		t.Fatal("unsupported pair did not stay isolated")
+	}
+	fields[0] = "changed"
+	if result.Unsupported[0].Fields[1] != "env.Z" {
+		t.Fatal("diagnostic aliases renderer")
+	}
+	a.Render = func(contract.Entry, contract.Project) ([]contract.Item, error) {
+		return nil, fmt.Errorf("private-renderer-value")
+	}
+	result, err := r.Desired([]contract.Entry{entry("bad")}, contract.Project{Harnesses: []string{"fixture"}})
+	if err == nil || strings.Contains(err.Error(), "private-renderer-value") || len(result.Items) != 0 || len(result.Unsupported) != 0 {
+		t.Fatal("unexpected error not redacted and fatal")
+	}
+}
+
+// Embed the contract fixture so only Notes differs from the standard adapter.
+type noteAdapter struct {
+	*testadapter.Adapter
+	notes func(contract.Project) []contract.Note
+}
+
+func (a noteAdapter) Notes(p contract.Project) []contract.Note { return a.notes(p) }
+
+func TestSelectedAdapterNotes(t *testing.T) {
+	calls := 0
+	notes := []contract.Note{{Harness: "base", Code: "z", Message: "last"}, {Harness: "base", Code: "a", Message: "first"}, {Harness: "base", Code: "z", Message: "last"}}
+	a := noteAdapter{testadapter.New("base", false), func(p contract.Project) []contract.Note { calls++; p.Harnesses[0] = "changed"; return notes }}
+	r := registry(t, a, testadapter.New("other", false))
+	p := contract.Project{Harnesses: []string{"base", "base"}}
+	result, err := r.Desired(nil, p)
+	if err != nil || calls != 1 || p.Harnesses[0] != "base" || len(result.Notes) != 2 || result.Notes[0].Code != "a" {
+		t.Fatal("notes not isolated, sorted and deduplicated")
+	}
+	notes[0].Message = "changed"
+	if result.Notes[1].Message != "last" {
+		t.Fatal("notes alias adapter")
+	}
+	if result, err := r.Desired(nil, contract.Project{}); err != nil || len(result.Notes) != 0 || calls != 1 {
+		t.Fatal("unselected notes collected")
+	}
+}

@@ -79,4 +79,11 @@ type Note struct{ Harness, Code, Message string }
 type Unsupported struct {
 	Harness, Entry string
 	Type           ArtifactType
+	Fields         []string
 }
+
+// UnsupportedError reports field capabilities for an otherwise valid entry.
+// It must contain only field names, never definition values.
+type UnsupportedError struct{ Fields []string }
+
+func (*UnsupportedError) Error() string { return "unsupported adapter fields" }

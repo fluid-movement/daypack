@@ -9,6 +9,7 @@ import (
 	"github.com/fluid-movement/daypack/internal/adapters"
 	"github.com/fluid-movement/daypack/internal/adapters/claudecode"
 	"github.com/fluid-movement/daypack/internal/adapters/contract"
+	"github.com/fluid-movement/daypack/internal/adapters/pi"
 )
 
 func TestDefaultRegistry(t *testing.T) {
@@ -16,14 +17,18 @@ func TestDefaultRegistry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(r.Names(), []string{"claude-code"}) {
+	if !reflect.DeepEqual(r.Names(), []string{"claude-code", "pi"}) {
 		t.Fatal(r.Names())
 	}
 	a, ok := r.Lookup("claude-code")
 	if _, concrete := a.(*claudecode.Adapter); !ok || !concrete {
 		t.Fatal("missing Claude adapter")
 	}
-	wantTargets := a.Targets()
+	p, ok := r.Lookup("pi")
+	if _, concrete := p.(*pi.Adapter); !ok || !concrete {
+		t.Fatal("missing Pi adapter")
+	}
+	wantTargets := append(a.Targets(), p.Targets()...)
 	slices.SortFunc(wantTargets, func(a, b contract.Target) int { return strings.Compare(a.ID, b.ID) })
 	if !reflect.DeepEqual(r.Targets(), wantTargets) {
 		t.Fatal(r.Targets())

@@ -3,6 +3,7 @@ package adapters
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
@@ -17,6 +18,7 @@ type Result struct {
 	Targets     []contract.Target
 	Items       []contract.Item
 	Unsupported []contract.Unsupported
+	Notes       []contract.Note
 }
 
 type pair struct{ target, entry string }
@@ -36,6 +38,18 @@ func (r *Registry) Desired(entries []contract.Entry, project contract.Project) (
 		}
 		selected[name] = true
 	}
+	for _, name := range r.Names() {
+		if !selected[name] {
+			continue
+		}
+		p := project
+		p.Harnesses = slices.Clone(project.Harnesses)
+		result.Notes = append(result.Notes, r.adapters[name].Notes(p)...)
+	}
+	slices.SortFunc(result.Notes, func(a, b contract.Note) int {
+		return slices.Compare([]string{a.Harness, a.Code, a.Message}, []string{b.Harness, b.Code, b.Message})
+	})
+	result.Notes = slices.Compact(result.Notes)
 	groups := map[pair]producer{}
 	used := map[string]bool{}
 	ownership := lock.New()
@@ -65,6 +79,14 @@ func (r *Registry) Desired(entries []contract.Entry, project contract.Project) (
 			p.Harnesses = slices.Clone(project.Harnesses)
 			items, err := a.Desired(contract.CloneEntry(entry), p)
 			if err != nil {
+				var unsupported *contract.UnsupportedError
+				if errors.As(err, &unsupported) && unsupported != nil {
+					fields := slices.Clone(unsupported.Fields)
+					slices.Sort(fields)
+					fields = slices.Compact(fields)
+					result.Unsupported = append(result.Unsupported, contract.Unsupported{Harness: name, Entry: entry.Ref, Type: entry.Artifact.Type, Fields: fields})
+					continue
+				}
 				return Result{}, fmt.Errorf("adapter %q rendering entry %q failed", name, entry.Ref)
 			}
 			byTarget := map[string][]contract.Item{}

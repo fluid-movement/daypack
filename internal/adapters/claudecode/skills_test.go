@@ -22,7 +22,7 @@ func TestPureRenderer(t *testing.T) {
 	a := claudecode.New()
 	p := contract.Project{Root: filepath.Join(string(filepath.Separator), "nonexistent project"), Harnesses: []string{"claude-code"}}
 	cases := []testadapter.Case{{Entry: skill("testing"), Project: p, Supported: true}}
-	for _, typ := range []library.ArtifactType{library.MCP, library.Agent, library.Fragment} {
+	for _, typ := range []library.ArtifactType{library.MCP, library.Fragment} {
 		e := skill("testing")
 		e.Artifact.Type = typ
 		cases = append(cases, testadapter.Case{Entry: e, Project: p})
@@ -41,7 +41,10 @@ func TestPureRenderer(t *testing.T) {
 		t.Fatalf("got %#v", items)
 	}
 	targets := a.Targets()
-	expected := []contract.Target{{ID: contract.ClaudeSkillsDir, Root: ".claude/skills", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Skill}}}
+	expected := []contract.Target{
+		{ID: contract.ClaudeSkillsDir, Root: ".claude/skills", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Skill}},
+		{ID: contract.ClaudeAgentsDir, Root: ".claude/agents", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Agent}},
+	}
 	if !reflect.DeepEqual(targets, expected) || a.Name() != "claude-code" || len(a.Notes(p)) != 0 {
 		t.Fatal("declarations")
 	}
@@ -109,7 +112,7 @@ func TestRegistrySelection(t *testing.T) {
 	if _, err := r.Desired([]contract.Entry{e}, p); err == nil {
 		t.Fatal("accepted empty selection")
 	}
-	for _, typ := range []library.ArtifactType{library.MCP, library.Agent, library.Fragment} {
+	for _, typ := range []library.ArtifactType{library.MCP, library.Fragment} {
 		e := skill("testing")
 		e.Artifact.Type = typ
 		got, err := r.Desired([]contract.Entry{e}, p)

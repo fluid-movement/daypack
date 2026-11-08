@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/fluid-movement/daypack/internal/adapters"
 	"github.com/fluid-movement/daypack/internal/adapters/claudecode"
 	"github.com/fluid-movement/daypack/internal/adapters/contract"
 	"github.com/fluid-movement/daypack/internal/adapters/testadapter"
@@ -14,18 +15,43 @@ import (
 	"github.com/fluid-movement/daypack/internal/testutil"
 )
 
+func TestSkillsAndAgentsTogether(t *testing.T) {
+	r, err := adapters.DefaultRegistry()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := skill("testing")
+	native := []byte("---\nname: reviewer\ndescription: Review changes\n---\nReview carefully.\n")
+	a := contract.Entry{Ref: "agent:reviewer", Artifact: library.Artifact{Type: library.Agent, Name: "reviewer"}, Content: native}
+	p := contract.Project{Root: "/nonexistent/project", Harnesses: []string{"claude-code"}}
+	result, err := r.Desired([]contract.Entry{s, a}, p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []contract.Item{
+		{Target: contract.ClaudeSkillsDir, Entry: s.Ref, Kind: contract.Symlink, Path: ".claude/skills/testing", Link: s.Artifact.Path},
+		{Target: contract.ClaudeAgentsDir, Entry: a.Ref, Kind: contract.File, Path: ".claude/agents/reviewer.md", Bytes: native},
+	}
+	if !reflect.DeepEqual(result.Items, want) || len(result.Unsupported) != 0 {
+		t.Fatalf("mixed artifacts: %+v", result)
+	}
+}
+
 func TestAgentItems(t *testing.T) {
 	a := claudecode.New()
 	if a.Name() != "claude-code" {
 		t.Fatal(a.Name())
 	}
-	wantTargets := []contract.Target{{ID: contract.ClaudeAgentsDir, Root: ".claude/agents", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Agent}}}
+	wantTargets := []contract.Target{
+		{ID: contract.ClaudeSkillsDir, Root: ".claude/skills", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Skill}},
+		{ID: contract.ClaudeAgentsDir, Root: ".claude/agents", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Agent}},
+	}
 	if !reflect.DeepEqual(a.Targets(), wantTargets) {
 		t.Fatal(a.Targets())
 	}
 	targets := a.Targets()
-	targets[0].Types[0] = library.Skill
-	targets[0].Root = "changed"
+	targets[1].Types[0] = library.Skill
+	targets[1].Root = "changed"
 	if !reflect.DeepEqual(a.Targets(), wantTargets) {
 		t.Fatal("target alias")
 	}
@@ -58,7 +84,7 @@ func TestAgentItems(t *testing.T) {
 		t.Fatal(err)
 	}
 	testutil.AssertJSONGolden(t, "testdata/agent-items.json", data)
-	for _, typ := range []library.ArtifactType{library.Skill, library.MCP, library.Fragment} {
+	for _, typ := range []library.ArtifactType{library.MCP, library.Fragment} {
 		e := contract.Entry{Artifact: library.Artifact{Type: typ}}
 		testadapter.CheckAdapter(t, a, []testadapter.Case{{Entry: e, Supported: false}})
 		items, err := a.Desired(e, p)

@@ -54,6 +54,10 @@ func renderFixture(t *testing.T, f testutil.Fixture, root string, r *adapters.Re
 	}
 	var entries []contract.Entry
 	for _, e := range m.Entries() {
+		// This lifecycle exercises skills; agents have a copied-file lifecycle test.
+		if e.Type != library.Skill {
+			continue
+		}
 		a, err := lib.Resolve(string(e.Type) + ":" + e.Name)
 		must(t, err)
 		entries = append(entries, contract.FromManifest(e, a, nil))

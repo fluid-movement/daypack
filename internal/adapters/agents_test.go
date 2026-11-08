@@ -23,13 +23,16 @@ func TestDefaultClaudeAgents(t *testing.T) {
 		t.Fatal(err)
 	}
 	a, ok := r.Lookup("claude-code")
-	if !ok || !a.Supports(library.Agent) {
+	if !ok || !a.Supports(library.Agent) || !a.Supports(library.Skill) {
 		t.Fatal("Claude agent adapter absent")
 	}
 	if !reflect.DeepEqual(r.Names(), []string{"claude-code"}) {
 		t.Fatal(r.Names())
 	}
-	want := []contract.Target{{ID: contract.ClaudeAgentsDir, Root: ".claude/agents", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Agent}}}
+	want := []contract.Target{
+		{ID: contract.ClaudeAgentsDir, Root: ".claude/agents", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Agent}},
+		{ID: contract.ClaudeSkillsDir, Root: ".claude/skills", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Skill}},
+	}
 	if !reflect.DeepEqual(r.Targets(), want) {
 		t.Fatal(r.Targets())
 	}

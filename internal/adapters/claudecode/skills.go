@@ -19,15 +19,23 @@ func New() *Adapter { return &Adapter{} }
 
 func (*Adapter) Name() string { return "claude-code" }
 
-func (*Adapter) Supports(t contract.ArtifactType) bool { return t == library.Skill }
+func (*Adapter) Supports(t contract.ArtifactType) bool {
+	return t == library.Skill || t == library.Agent
+}
 
 func (*Adapter) Targets() []contract.Target {
-	return []contract.Target{{ID: contract.ClaudeSkillsDir, Root: ".claude/skills", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Skill}}}
+	return []contract.Target{
+		{ID: contract.ClaudeSkillsDir, Root: ".claude/skills", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Skill}},
+		{ID: contract.ClaudeAgentsDir, Root: ".claude/agents", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Agent}},
+	}
 }
 
 func (a *Adapter) Desired(e contract.Entry, _ contract.Project) ([]contract.Item, error) {
 	if !a.Supports(e.Artifact.Type) {
 		return nil, nil
+	}
+	if e.Artifact.Type == library.Agent {
+		return agentItems(e)
 	}
 	if err := library.ValidateName(library.Skill, e.Artifact.Name); err != nil {
 		return nil, fmt.Errorf("invalid skill name")

@@ -22,7 +22,15 @@ func TestCopiedAgentOwnershipLifecycle(t *testing.T) {
 	sentinel := testutil.PlantSentinel(t, f)
 	defer testutil.AssertNoSecret(t, f.Project, sentinel)
 	a := claudecode.New()
-	roots := []string{a.Targets()[0].Root}
+	var roots []string
+	for _, target := range a.Targets() {
+		if target.ID == contract.ClaudeAgentsDir {
+			roots = append(roots, target.Root)
+		}
+	}
+	if len(roots) != 1 {
+		t.Fatal("missing Claude agents target")
+	}
 	render := func() contract.Item {
 		t.Helper()
 		lib, err := library.Load(f.Library)

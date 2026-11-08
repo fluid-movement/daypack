@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -115,6 +114,13 @@ func TestLibraryImportSelectedStorageAndOverrides(t *testing.T) {
 		t.Run(selection, func(t *testing.T) {
 			f := importFixture(t)
 			if selection == "HOME" || selection == "XDG_CONFIG_HOME" {
+				home, err := filepath.EvalSymlinks(f.Home)
+				if err != nil {
+					t.Fatal(err)
+				}
+				f.Home = home
+				t.Setenv("HOME", home)
+				t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, ".config"))
 				target := filepath.Join(f.Home, ".config", "daypack")
 				if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
 					t.Fatal(err)
@@ -122,7 +128,6 @@ func TestLibraryImportSelectedStorageAndOverrides(t *testing.T) {
 				if err := os.Rename(f.Library, target); err != nil {
 					t.Fatal(err)
 				}
-				var err error
 				f.Library, err = filepath.EvalSymlinks(target)
 				if err != nil {
 					t.Fatal(err)
@@ -195,7 +200,7 @@ func TestLibraryImportGoldens(t *testing.T) {
 
 func TestLibraryImportNoPrompts(t *testing.T) {
 	f := importFixture(t)
-	importWrite(t, filepath.Join(f.Home, ".claude.json"), fmt.Sprintf(`{"mcpServers":{"no-exec":{"command":%q}}}`, filepath.Join(f.Home, "nonexistent-executable")))
+	importWrite(t, filepath.Join(f.Home, ".claude.json"), `{"mcpServers":{"no-exec":{"command":"./nonexistent-executable"}}}`)
 	r := testutil.RunCLIWithInput(t, f, strings.NewReader(""), true, "library", "import")
 	if r.Code != 0 || r.Stderr != "" {
 		t.Fatalf("import prompted or executed MCP: %+v", r)

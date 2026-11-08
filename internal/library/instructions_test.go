@@ -2,6 +2,7 @@ package library
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -239,20 +240,85 @@ func TestInstructionsUnsafePaths(t *testing.T) {
 	if err := RefreshInstructions(root); err == nil {
 		t.Fatal("accepted directory guide")
 	}
-	link := filepath.Join(filepath.Dir(root), "link")
-	if err := os.Symlink(root, link); err != nil {
-		t.Fatal(err)
-	}
-	for _, refresh := range []func(string) error{Init, RefreshInstructions} {
-		if err := refresh(link); err == nil {
-			t.Fatal("accepted symlink root")
-		}
-		if err := refresh(filepath.Join(link, "child")); err == nil {
-			t.Fatal("accepted symlink ancestor")
-		}
-	}
 	if err := RefreshInstructions(filepath.Join(root, "missing")); err == nil {
 		t.Fatal("initialized missing library")
+	}
+}
+
+func TestInstructionsSymlinkedLibrary(t *testing.T) {
+	for _, ancestor := range []bool{false, true} {
+		t.Run(fmt.Sprintf("ancestor=%v", ancestor), func(t *testing.T) {
+			base := t.TempDir()
+			real := filepath.Join(base, "real")
+			if err := os.Mkdir(real, 0755); err != nil {
+				t.Fatal(err)
+			}
+			alias := filepath.Join(base, "alias")
+			if err := os.Symlink(real, alias); err != nil {
+				t.Fatal(err)
+			}
+			if ancestor {
+				real = filepath.Join(real, "nested", "library")
+				alias = filepath.Join(alias, "nested", "library")
+			}
+			if err := Init(alias); err != nil {
+				t.Fatal(err)
+			}
+			path := filepath.Join(real, "AGENTS.md")
+			for _, refresh := range []func(string) error{Init, RefreshInstructions} {
+				writeNative(t, path, []byte("personal notes\n"))
+				if err := refresh(alias); err != nil {
+					t.Fatal(err)
+				}
+				data := string(mustRead(t, path))
+				if !strings.HasPrefix(data, "personal notes\n") || !strings.Contains(data, instructionsBegin) {
+					t.Fatal("guide not refreshed or personal notes lost")
+				}
+			}
+			outside := filepath.Join(base, "outside")
+			writeNative(t, outside, []byte("sentinel"))
+			if err := os.Remove(path); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.Symlink(outside, path); err != nil {
+				t.Fatal(err)
+			}
+			for _, refresh := range []func(string) error{Init, RefreshInstructions} {
+				if err := refresh(alias); err == nil {
+					t.Fatal("accepted symlink guide through library alias")
+				}
+			}
+			if string(mustRead(t, outside)) != "sentinel" {
+				t.Fatal("symlink target changed")
+			}
+		})
+	}
+}
+
+func TestSafeInstructionsPath(t *testing.T) {
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	stage, clean, err := stagePath(filepath.Join(root, "AGENTS.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := clean(); err != nil {
+			t.Error(err)
+		}
+	})
+	if _, err := safeInstructionsPath(root, stage); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(t.TempDir(), "missing"), stage); err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range []string{root, filepath.Join(root, "..", "outside"), stage, filepath.Join(stage, "child")} {
+		if _, err := safeInstructionsPath(root, path); err == nil {
+			t.Fatalf("accepted unsafe guide/staging path %s", path)
+		}
 	}
 }
 

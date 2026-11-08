@@ -138,11 +138,34 @@ func renderInstructions(data []byte) ([]byte, error) {
 	return append(out, data[end+len(instructionsEnd):]...), nil
 }
 
-// RefreshInstructions updates only the root guide of an existing safe library.
+// safeInstructionsPath guards descendants of a canonical library root only.
+func safeInstructionsPath(root, path string) (string, error) {
+	path = filepath.Clean(path)
+	rel, err := filepath.Rel(root, path)
+	if err != nil || rel == "." || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return "", fmt.Errorf("instructions path escapes library: %s", path)
+	}
+	for p := path; p != root; p = filepath.Dir(p) {
+		info, err := os.Lstat(p)
+		if err != nil && !os.IsNotExist(err) {
+			return "", err
+		}
+		if err == nil && info.Mode()&os.ModeSymlink != 0 {
+			return "", fmt.Errorf("symlink path is not allowed: %s", p)
+		}
+	}
+	return path, nil
+}
+
+// RefreshInstructions updates only the root guide of an existing library.
 func RefreshInstructions(root string) (err error) {
-	root, err = safePath(root)
+	root, err = filepath.Abs(root)
 	if err != nil {
 		return err
+	}
+	root, err = filepath.EvalSymlinks(root)
+	if err != nil {
+		return fmt.Errorf("open existing library: %w", err)
 	}
 	info, err := os.Stat(root)
 	if err != nil {
@@ -151,7 +174,7 @@ func RefreshInstructions(root string) (err error) {
 	if !info.IsDir() {
 		return fmt.Errorf("library %s is not a directory", root)
 	}
-	path, err := safePath(filepath.Join(root, "AGENTS.md"))
+	path, err := safeInstructionsPath(root, filepath.Join(root, "AGENTS.md"))
 	if err != nil {
 		return err
 	}
@@ -180,6 +203,10 @@ func RefreshInstructions(root string) (err error) {
 		return fmt.Errorf("stage instructions: %w", err)
 	}
 	defer func() { err = errors.Join(err, clean()) }()
+	stage, err = safeInstructionsPath(root, stage)
+	if err != nil {
+		return fmt.Errorf("stage instructions: %w", err)
+	}
 	if err := os.WriteFile(stage, out, mode); err != nil {
 		return fmt.Errorf("write instructions: %w", err)
 	}

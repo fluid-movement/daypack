@@ -1,0 +1,3 @@
+- 2026-11-08T12:09:09Z codex: Implemented, ready for check: library init and generated guide refresh resolve library roots while guarding guide and staging descendants, with root/ancestor symlink and unsafe-path regressions; go build ./..., go vet ./..., go test -count=1 ./..., gofmt -l ., and golangci-lint v2.15.0 all passed (0 lint issues), prep check passed with 0 errors and 2 existing K004 warnings, and manual DAYPACK_HOME directory-symlink library init and doctor --fix both regenerated AGENTS.md successfully. Go checks used a writable temporary GOCACHE and lint cache. Prep record writes succeeded but automatic Git staging was denied by the sandbox; no completion, commit or push performed.
+
+- 2026-11-08T12:11:33Z claude-code: x

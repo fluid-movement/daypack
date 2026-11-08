@@ -1,0 +1,3 @@
+- [x] Library init and doctor --fix succeed when the selected existing library root or an ancestor is a symlink; init also creates an absent library beneath a symlinked ancestor, with regression coverage.
+- [x] AGENTS.md symlinks remain refused through a symlinked library root without changing the target; guide and staging paths are guarded against symlinks and escaping the resolved library.
+- [x] All requested Go build, vet, uncached tests, formatting and golangci-lint v2.15.0 checks pass, prep check passes, and manual DAYPACK_HOME symlink init/doctor --fix succeeds.

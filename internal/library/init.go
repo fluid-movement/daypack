@@ -8,11 +8,11 @@ import (
 )
 
 func Init(path string) (err error) {
-	path, err = safePath(path)
+	path, err = filepath.Abs(path)
 	if err != nil {
 		return err
 	}
-	if info, e := os.Lstat(path); e == nil {
+	if info, e := os.Stat(path); e == nil {
 		if !info.IsDir() {
 			return fmt.Errorf("library %s is not a directory", path)
 		}
@@ -23,6 +23,11 @@ func Init(path string) (err error) {
 	if err = os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}
+	parent, err := filepath.EvalSymlinks(filepath.Dir(path))
+	if err != nil {
+		return err
+	}
+	path = filepath.Join(parent, filepath.Base(path))
 	stage, clean, err := stagePath(path)
 	if err != nil {
 		return err

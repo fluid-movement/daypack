@@ -1,0 +1,7 @@
+`internal/library/init.go` calls the ancestor-rejecting `safePath` before inspecting an existing library. `internal/library/instructions.go:RefreshInstructions` repeats this guard for the root and AGENTS.md, then uses `stagePath` from `internal/library/write.go` for atomic replacement. Resolve existing library roots with filepath.EvalSymlinks; for new initialization create and resolve the parent before staging. In the guide writer guard only descendants of the resolved root, including the staging file; reject symlinks and lexical escapes. Keep unrelated artifact/source mutation guards unchanged.
+
+`internal/library/instructions_test.go:TestInstructionsUnsafePaths` currently rejects root aliases (while its guide is a directory); replace that misleading expectation with successful root/ancestor alias regression cases, and verify guide symlinks remain refused through aliases without changing their targets. Cover absent-library init under a symlinked ancestor and descendant/staging safety. `internal/cli/library.go` routes doctor --fix to RefreshInstructions. Verify the CLI with DAYPACK_HOME set to a directory symlink.
+
+Follow [generated library guide decision](/decisions/01M6XFYKA3P7XRNF3BGTJZG2CZ.md): preserve personal notes and unrelated files, and keep the existing atomic guide refresh behavior.
+
+Validation: go build ./..., go vet ./..., go test -count=1 ./..., gofmt -l ., golangci-lint v2.15.0, prep check, and manual symlinked DAYPACK_HOME library init/doctor --fix. Implementer logs ready for check and stops without completion or commits.

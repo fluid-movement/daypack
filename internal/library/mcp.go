@@ -198,3 +198,9 @@ func suspicious(value string) bool {
 	}
 	return false
 }
+
+// IsSecretKey shares the native credential-key rule with importers.
+func IsSecretKey(key string) bool { return secretKey.MatchString(key) }
+
+// LooksLikeSecret shares native suspicious-value checks with importers.
+func LooksLikeSecret(value string) bool { return suspicious(value) }

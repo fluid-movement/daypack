@@ -1,0 +1,7 @@
+library-mcp:
+  + create mcp:preview <ROOT1>/mcp/preview.toml [planned]
+  x unsupported mcp:unsafe <ROOT1>/mcp/unsafe.toml [skipped; secret-looking command, argument, URL or description; value redacted]
+note claude-code import-source: \"<ROOT0>/.claude.json\" entry \"/mcpServers/preview\" -> mcp:preview
+note claude-code import-source: \"<ROOT0>/.claude.json\" entry \"/mcpServers/unsafe\" -> mcp:unsafe
+Summary: + 1 ~ 0 - 0 ! 0 ? 0 x 1
+Outcomes: planned 1 applied 0 skipped 1 failed 0 unchanged 0

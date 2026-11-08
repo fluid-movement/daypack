@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/fluid-movement/daypack/internal/adapters/contract"
+	"github.com/fluid-movement/daypack/internal/importer"
 	"github.com/fluid-movement/daypack/internal/library"
 	"github.com/fluid-movement/daypack/internal/plan"
 )
@@ -78,6 +79,18 @@ func render(w io.Writer, options Options, command string, result Result) error {
 			return errors.New("could not write plan result")
 		}
 		return err
+	}
+	if result.plan != nil && options.Quiet {
+		if items, ok := result.Items.([]importer.Item); ok {
+			for _, item := range items {
+				if item.Reason != "" {
+					if _, err := fmt.Fprintf(w, "%s:%s: %s\n", oneLine(string(item.Type)), oneLine(item.Name), oneLine(item.Reason)); err != nil {
+						return err
+					}
+				}
+			}
+		}
+		return nil
 	}
 	if result.plan != nil && !options.Quiet {
 		if err := plan.RenderText(w, *result.plan); err != nil {

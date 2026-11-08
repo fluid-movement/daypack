@@ -86,6 +86,53 @@ func checkSecretsDestination(root string) error {
 	return nil
 }
 
+// CheckSecrets performs the same storage checks as WriteSecrets without writing.
+func CheckSecrets(root, projectRoot string, values map[string]string) error {
+	_, _, _, err := prepareSecrets(root, projectRoot, values)
+	return err
+}
+
+func prepareSecrets(root, projectRoot string, values map[string]string) (string, []byte, []string, error) {
+	if len(values) == 0 {
+		return "", nil, nil, nil
+	}
+	for name, value := range values {
+		if !secrets.ValidName(name) {
+			return "", nil, nil, fmt.Errorf("invalid secret variable name")
+		}
+		if strings.ContainsAny(value, "\x00\r\n") {
+			return "", nil, nil, fmt.Errorf("invalid secret value for %s: NUL, CR and LF are not supported", name)
+		}
+	}
+	dest, err := privateSecretsPath(root, projectRoot)
+	if err != nil {
+		return "", nil, nil, err
+	}
+	root = filepath.Dir(dest)
+	if err := checkSecretsDestination(root); err != nil {
+		return "", nil, nil, err
+	}
+	data, err := os.ReadFile(dest)
+	if err != nil && !os.IsNotExist(err) {
+		return "", nil, nil, err
+	}
+	existing, err := parseSecrets(data)
+	if err != nil {
+		return "", nil, nil, fmt.Errorf("%s: %w", dest, err)
+	}
+	missing := []string{}
+	for name, value := range values {
+		if old, exists := existing[name]; exists {
+			if old != value {
+				return "", nil, nil, fmt.Errorf("secret variable %s already has a different value", name)
+			}
+		} else {
+			missing = append(missing, name)
+		}
+	}
+	return dest, data, missing, nil
+}
+
 // WriteSecrets stores a complete importer batch in the selected library only.
 // It validates the entire batch before staging, preserves supported existing
 // bytes, and atomically replaces the file. Concurrent writers are not coordinated.
@@ -93,39 +140,9 @@ func WriteSecrets(root, projectRoot string, values map[string]string) (err error
 	if len(values) == 0 {
 		return nil
 	}
-	for name, value := range values {
-		if !secrets.ValidName(name) {
-			return fmt.Errorf("invalid secret variable name")
-		}
-		if strings.ContainsAny(value, "\x00\r\n") {
-			return fmt.Errorf("invalid secret value for %s: NUL, CR and LF are not supported", name)
-		}
-	}
-	dest, err := privateSecretsPath(root, projectRoot)
+	dest, data, missing, err := prepareSecrets(root, projectRoot, values)
 	if err != nil {
 		return err
-	}
-	root = filepath.Dir(dest)
-	if err := checkSecretsDestination(root); err != nil {
-		return err
-	}
-	data, err := os.ReadFile(dest)
-	if err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	existing, err := parseSecrets(data)
-	if err != nil {
-		return fmt.Errorf("%s: %w", dest, err)
-	}
-	missing := []string{}
-	for name, value := range values {
-		if old, exists := existing[name]; exists {
-			if old != value {
-				return fmt.Errorf("secret variable %s already has a different value", name)
-			}
-		} else {
-			missing = append(missing, name)
-		}
 	}
 	if len(missing) == 0 {
 		return nil
@@ -242,4 +259,21 @@ func decodeSecret(encoded string) (string, bool) {
 		}
 	}
 	return out.String(), true
+}
+
+// StoredSecrets reads a checked private store for importer content comparisons.
+// It never expands references or consults the process environment.
+func StoredSecrets(root, projectRoot string) (map[string]string, error) {
+	dest, err := privateSecretsPath(root, projectRoot)
+	if err != nil {
+		return nil, err
+	}
+	if err = checkSecretsDestination(root); err != nil {
+		return nil, err
+	}
+	data, err := os.ReadFile(dest)
+	if err != nil && !os.IsNotExist(err) {
+		return nil, err
+	}
+	return parseSecrets(data)
 }

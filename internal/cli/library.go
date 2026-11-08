@@ -119,6 +119,6 @@ func libraryCommand(streams IO, editor editorRunner) *cobra.Command {
 		}
 		return result, nil
 	})
-	group.AddCommand(init, add, edit, rename, remove, doctor)
+	group.AddCommand(init, add, edit, rename, remove, doctor, libraryImportCommand())
 	return group
 }

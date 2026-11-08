@@ -1,0 +1,87 @@
+{
+  "command": "daypack library import",
+  "items": [
+    {
+      "action": "create",
+      "destination": "\u003cROOT1\u003e/mcp/preview.toml",
+      "name": "preview",
+      "outcome": "planned",
+      "safe_to_remove": false,
+      "sources": [
+        {
+          "harness": "claude-code",
+          "key": "/mcpServers/preview",
+          "path": "\u003cROOT0\u003e/.claude.json"
+        }
+      ],
+      "type": "mcp"
+    },
+    {
+      "action": "unsupported",
+      "destination": "\u003cROOT1\u003e/mcp/unsafe.toml",
+      "name": "unsafe",
+      "outcome": "skipped",
+      "reason": "secret-looking command, argument, URL or description; value redacted",
+      "safe_to_remove": false,
+      "sources": [
+        {
+          "harness": "claude-code",
+          "key": "/mcpServers/unsafe",
+          "path": "\u003cROOT0\u003e/.claude.json"
+        }
+      ],
+      "type": "mcp"
+    }
+  ],
+  "notes": [
+    {
+      "Code": "import-source",
+      "Harness": "claude-code",
+      "Message": "\"\u003cROOT0\u003e/.claude.json\" entry \"/mcpServers/preview\" -\u003e mcp:preview"
+    },
+    {
+      "Code": "import-source",
+      "Harness": "claude-code",
+      "Message": "\"\u003cROOT0\u003e/.claude.json\" entry \"/mcpServers/unsafe\" -\u003e mcp:unsafe"
+    }
+  ],
+  "ok": false,
+  "operations": [
+    {
+      "action": "create",
+      "entry": "mcp:preview",
+      "gated": false,
+      "kind": "file",
+      "marker": "+",
+      "outcome": "planned",
+      "path": "\u003cROOT1\u003e/mcp/preview.toml",
+      "target": "library-mcp"
+    },
+    {
+      "action": "unsupported",
+      "entry": "mcp:unsafe",
+      "gated": false,
+      "kind": "file",
+      "marker": "x",
+      "outcome": "skipped",
+      "path": "\u003cROOT1\u003e/mcp/unsafe.toml",
+      "reason": "secret-looking command, argument, URL or description; value redacted",
+      "target": "library-mcp"
+    }
+  ],
+  "outcomes": {
+    "applied": 0,
+    "failed": 0,
+    "planned": 1,
+    "skipped": 1,
+    "unchanged": 0
+  },
+  "summary": {
+    "conflict": 0,
+    "create": 1,
+    "drift": 0,
+    "remove": 0,
+    "unresolved": 1,
+    "update": 0
+  }
+}

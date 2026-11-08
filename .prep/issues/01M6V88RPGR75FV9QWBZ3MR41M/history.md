@@ -5,3 +5,5 @@
 - 2026-11-08T11:00:43Z edited by claude-code: requirement
 
 - 2026-11-08T11:49:12Z edited by claude-code: title
+
+- 2026-11-08T11:57:40Z codex: Implemented, ready for check: Added compiled library-local AGENTS.md generation and atomic refresh through init and doctor --fix, root-only discovery exclusion, regression tests and documentation; build, vet, uncached tests, formatting, golangci-lint v2.15.0 and prep check pass with zero errors.

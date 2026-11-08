@@ -12,8 +12,13 @@ func Init(path string) (err error) {
 	if err != nil {
 		return err
 	}
-	if err = absent(path); err != nil {
-		return err
+	if info, e := os.Lstat(path); e == nil {
+		if !info.IsDir() {
+			return fmt.Errorf("library %s is not a directory", path)
+		}
+		return RefreshInstructions(path)
+	} else if !os.IsNotExist(e) {
+		return e
 	}
 	if err = os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
@@ -32,6 +37,9 @@ func Init(path string) (err error) {
 		}
 	}
 	if err = os.WriteFile(filepath.Join(stage, ".gitignore"), []byte("/secrets.env\n"), 0644); err != nil {
+		return err
+	}
+	if err = RefreshInstructions(stage); err != nil {
 		return err
 	}
 	return publish(stage, path)

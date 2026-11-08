@@ -48,3 +48,30 @@ if [ -f "$daypack_secrets_file" ]; then
 fi
 unset daypack_secrets_file
 ```
+
+## Library instructions
+
+```sh
+daypack library init                 # create the selected library, or refresh its guide
+daypack --library /path/to/library library init
+daypack library doctor              # read-only validation
+daypack library doctor --fix        # refresh the guide, then validate
+```
+
+The binary generates a library-local root `AGENTS.md` describing its layout,
+native schemas, commands and reference-only secrets policy. It installs no global
+instructions or harness skills. Selection uses `--library`, then `DAYPACK_HOME`,
+then `$XDG_CONFIG_HOME/daypack`, then `$HOME/.config/daypack`.
+
+Content between `<!-- daypack:begin library-instructions -->` and
+`<!-- daypack:end library-instructions -->` has an explicit content revision and
+is refreshed from the binary. Keep user notes outside these markers; their bytes
+are preserved. An unmarked file gets one appended region. Identical refreshes
+preserve file bytes and modification time; malformed markers cause an error.
+
+Re-running init on an existing directory updates only this guide, including in
+an empty directory or a library with invalid records. `doctor --fix` requires an
+existing library and performs the same refresh before ordinary validation. Both
+leave artifact records, skill support files, `.gitignore`, `secrets.env` and other
+files untouched. Neither reads secret values. Only the root guide is excluded
+from artifact discovery; skill support files named `AGENTS.md` remain valid.

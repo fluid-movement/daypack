@@ -33,12 +33,12 @@ func runEditor(ctx context.Context, editor, path string, streams IO) error {
 }
 func libraryCommand(streams IO, editor editorRunner) *cobra.Command {
 	group := &cobra.Command{Use: "library", Short: "Manage the artifact library"}
-	init := &cobra.Command{Use: "init", Short: "Create a library", Args: cobra.NoArgs}
+	init := &cobra.Command{Use: "init", Short: "Create a library or refresh its generated instructions", Args: cobra.NoArgs}
 	SetHandler(init, func(_ context.Context, opts Options, _ []string) (Result, error) {
 		if err := library.Init(opts.LibraryDir); err != nil {
 			return Result{}, err
 		}
-		return Result{Message: "Created library " + opts.LibraryDir}, nil
+		return Result{Message: "Initialized library instructions at " + opts.LibraryDir}, nil
 	})
 	add := &cobra.Command{Use: "add <type> <name>", Short: "Add a native artifact or valid stub", Args: cobra.ExactArgs(2)}
 	var source string
@@ -106,7 +106,14 @@ func libraryCommand(streams IO, editor editorRunner) *cobra.Command {
 		return Result{Message: fmt.Sprintf("Removed %s:%s", kind, args[1]), Problems: referenceWarning(kind, args[1], opts.LibraryDir)}, nil
 	})
 	doctor := &cobra.Command{Use: "doctor", Short: "Validate the library and secrets Git hygiene", Args: cobra.NoArgs}
+	var fix bool
+	doctor.Flags().BoolVar(&fix, "fix", false, "Refresh generated library instructions before validation")
 	SetHandler(doctor, func(_ context.Context, opts Options, _ []string) (Result, error) {
+		if fix {
+			if err := library.RefreshInstructions(opts.LibraryDir); err != nil {
+				return Result{}, err
+			}
+		}
 		problems, err := library.Doctor(opts.LibraryDir)
 		if err != nil {
 			return Result{}, err

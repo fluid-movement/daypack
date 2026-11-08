@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/fluid-movement/daypack/internal/library"
 	"github.com/spf13/cobra"
@@ -135,8 +137,8 @@ func TestLibraryCLIInitAndImport(t *testing.T) {
 		t.Fatal(stderr)
 	}
 	code, _, _ = libraryInvoke(t, newRoot, "init")
-	if code != Error {
-		t.Fatal("init overwrote library")
+	if code != Success {
+		t.Fatal("init refresh failed")
 	}
 	a, err := library.Add(root, library.AddOptions{Type: library.Skill, Name: "imported"})
 	if err != nil {
@@ -310,5 +312,77 @@ func TestLibraryDoctorSecretsModes(t *testing.T) {
 				}
 			})
 		}
+	}
+}
+
+func TestLibraryInstructionsFix(t *testing.T) {
+	for _, json := range []bool{false, true} {
+		t.Run(fmt.Sprint(json), func(t *testing.T) {
+			root := libraryEnvironment(t)
+			path := filepath.Join(root, "AGENTS.md")
+			wrong := filepath.Join(filepath.Dir(root), "wrong-selection")
+			t.Setenv("DAYPACK_HOME", wrong)
+			args := []string{"doctor"}
+			if json {
+				args = append(args, "--json")
+			}
+			if err := os.Remove(path); err != nil {
+				t.Fatal(err)
+			}
+			code, out, stderr := libraryInvoke(t, root, args...)
+			if code != Success {
+				t.Fatalf("%d %s %s", code, out, stderr)
+			}
+			if _, err := os.Lstat(path); !os.IsNotExist(err) {
+				t.Fatal("plain doctor wrote instructions")
+			}
+			args = append(args, "--fix")
+			code, out, stderr = libraryInvoke(t, root, args...)
+			if code != Success {
+				t.Fatalf("%d %s %s", code, out, stderr)
+			}
+			if json {
+				object(t, out, code, "daypack library doctor")
+			}
+			data, err := os.ReadFile(path)
+			if err != nil || !bytes.Contains(data, []byte("Generated content revision:")) {
+				t.Fatalf("guide: %s %v", data, err)
+			}
+			stamp := time.Unix(123456789, 0)
+			if err := os.Chtimes(path, stamp, stamp); err != nil {
+				t.Fatal(err)
+			}
+			code, out, _ = libraryInvoke(t, root, args...)
+			if code != Success {
+				t.Fatal(out)
+			}
+			info, err := os.Stat(path)
+			if err != nil || !info.ModTime().Equal(stamp) {
+				t.Fatal("fix changed no-op mtime")
+			}
+			if err := os.WriteFile(filepath.Join(root, "agents", "broken.md"), []byte("invalid"), 0644); err != nil {
+				t.Fatal(err)
+			}
+			code, out, _ = libraryInvoke(t, root, args...)
+			if code != Error || !strings.Contains(out, "frontmatter") {
+				t.Fatalf("lost unrelated error: %d %s", code, out)
+			}
+			missing := filepath.Join(filepath.Dir(root), "missing")
+			code, _, _ = libraryInvoke(t, missing, args...)
+			if code != Error {
+				t.Fatal("fixed missing library")
+			}
+			if _, err := os.Stat(missing); !os.IsNotExist(err) {
+				t.Fatal("created missing library")
+			}
+			if _, err := os.Stat(wrong); !os.IsNotExist(err) {
+				t.Fatal("ignored --library selection")
+			}
+			var stdout, stderrList bytes.Buffer
+			code = Run(context.Background(), []string{"--library", root, "--project", filepath.Dir(root), "list", "--json"}, IO{Out: &stdout, Err: &stderrList})
+			if code != Success || strings.Contains(stdout.String(), "AGENTS.md") {
+				t.Fatalf("instructions listed: %d %s %s", code, &stdout, &stderrList)
+			}
+		})
 	}
 }

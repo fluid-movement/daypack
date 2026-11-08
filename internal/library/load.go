@@ -35,7 +35,7 @@ func Load(libraryPath string) (*Library, error) {
 	}
 	dirs := map[string]ArtifactType{"skills": Skill, "mcp": MCP, "fragments": Fragment, "agents": Agent}
 	for _, e := range entries {
-		if housekeeping(e.Name()) {
+		if e.Name() == "AGENTS.md" || housekeeping(e.Name()) {
 			continue
 		}
 		path := filepath.Join(libraryPath, e.Name())

@@ -147,8 +147,10 @@ func TestInitRefusesExisting(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		if err := Init(path); err == nil {
-			t.Fatalf("overwrote %s", path)
+		err := Init(path)
+		wantSuccess := path == root || filepath.Base(path) == "empty"
+		if (err == nil) != wantSuccess {
+			t.Fatalf("init %s: %v", path, err)
 		}
 	}
 	if string(mustRead(t, filepath.Join(root, ".gitignore"))) != "/secrets.env\n" {

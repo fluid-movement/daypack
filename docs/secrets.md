@@ -119,3 +119,25 @@ Secret-looking env/header keys reject literal values; suspicious args/URLs only
 warn. This is a heuristic, not a guarantee that arbitrary literals are safe.
 Keep credentials exclusively in the external private file or environment, never
 in project files, locks, command arguments, defaults or diagnostic output.
+
+## Generated library instructions
+
+`daypack library init` creates a root `AGENTS.md` from text compiled into the
+binary, with a content revision and the managed markers
+`<!-- daypack:begin library-instructions -->` and
+`<!-- daypack:end library-instructions -->`. Notes outside that region retain
+their bytes. An unmarked handwritten file gets one appended region; malformed
+markers are rejected. The guide is local to the selected library, universal
+across harnesses, and is excluded only at the library root from artifact discovery
+and import sources. No global instructions or harness skills are installed.
+
+Re-running `daypack library init` on an existing directory, or running
+`daypack library doctor --fix`, creates missing instructions or refreshes stale
+managed content. Identical runs preserve bytes and modification time. Existing
+empty directories receive only the guide; invalid artifacts do not prevent a
+refresh. `--fix` refuses a missing library and then runs normal validation,
+retaining unrelated diagnostics. Plain doctor remains read-only.
+
+These refreshes leave records, support files, `.gitignore`, `secrets.env` and
+unrelated files untouched. They neither repair secrets nor read secret values.
+Fresh init alone creates the artifact folders and the `/secrets.env` ignore rule.

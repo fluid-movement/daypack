@@ -425,3 +425,37 @@ func TestOverridesAndMalformedJSON(t *testing.T) {
 		testutil.AssertNoSecret(t, f.Project, "SENTINEL", string(data))
 	}
 }
+
+func TestGeneratedLibraryInstructionsExcluded(t *testing.T) {
+	f, opts := fixture(t, false)
+	if err := library.Init(f.Library); err != nil {
+		t.Fatal(err)
+	}
+	if r := run(t, opts); len(r.Items) != 0 {
+		t.Fatalf("root guide became import result: %+v", r.Items)
+	}
+	// A native agent alias must retain the existing source-confinement guard.
+	link(t, filepath.Join(f.Library, "AGENTS.md"), filepath.Join(f.Home, ".claude", "agents", "guide.md"))
+	r := run(t, opts)
+	if len(r.Items) != 1 || r.Items[0].Outcome != plan.Skipped || !strings.Contains(r.Items[0].Reason, "library") {
+		t.Fatalf("library source link not excluded: %+v", r.Items)
+	}
+	// AGENTS.md remains a legitimate skill support file.
+	native := filepath.Join(f.Home, ".claude", "skills", "review")
+	skill(t, native, "review")
+	write(t, filepath.Join(native, "AGENTS.md"), "handwritten support instructions\r\n")
+	r = run(t, opts)
+	found := false
+	for _, i := range r.Items {
+		if i.Name == "review" && i.Outcome == plan.Applied {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("skill not imported: %+v", r.Items)
+	}
+	data, err := os.ReadFile(filepath.Join(f.Library, "skills", "review", "AGENTS.md"))
+	if err != nil || string(data) != "handwritten support instructions\r\n" {
+		t.Fatalf("support guide: %q %v", data, err)
+	}
+}

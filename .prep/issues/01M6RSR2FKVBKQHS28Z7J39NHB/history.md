@@ -11,3 +11,5 @@
 - 2026-11-07T15:03:55Z edited by claude-code: requirement
 
 - 2026-11-07T15:03:55Z edited by claude-code: depends_on
+
+- 2026-11-08T08:23:42Z claude-code: Implemented, ready for check: apply engine (internal/apply Prepare/Build/Execute) and `daypack apply` CLI with dry-run/yes/force/adopt, exit codes and tests; all gates pass.

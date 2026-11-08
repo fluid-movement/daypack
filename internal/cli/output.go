@@ -10,6 +10,7 @@ import (
 	"github.com/fluid-movement/daypack/internal/adapters/contract"
 	"github.com/fluid-movement/daypack/internal/importer"
 	"github.com/fluid-movement/daypack/internal/library"
+	"github.com/fluid-movement/daypack/internal/manifest"
 	"github.com/fluid-movement/daypack/internal/plan"
 )
 
@@ -108,6 +109,14 @@ func render(w io.Writer, options Options, command string, result Result) error {
 				return err
 			}
 		}
+	}
+	if items, ok := result.Items.([]manifest.UsageEntry); ok && options.Quiet {
+		for _, e := range items {
+			if _, err := fmt.Fprintf(w, "%s:%s\n", e.Type, oneLine(e.Name)); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 	if !options.Quiet && result.Message != "" {
 		_, err := fmt.Fprintln(w, result.Message)

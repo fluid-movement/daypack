@@ -137,3 +137,27 @@ func TestInlineSharedValidation(t *testing.T) {
 		t.Fatal("repeated validation changed diagnostics")
 	}
 }
+
+func TestValidationHints(t *testing.T) {
+	lib := testLibrary(t)
+	cases := []struct{ name, text, hint string }{
+		{"unknown name", header + "fragments=['ca']", "did you mean fragment:cat?"},
+		{"unknown harness", "version=1\nharnesses=['claud-code']", `did you mean "claude-code"?`},
+		{"unknown entry harness", header + "mcp=[{name='shared',harnesses=['p']}]", `did you mean "pi"?`},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			found := false
+			for _, p := range loadText(t, tc.text).Validate(lib) {
+				found = found || p.Hint == tc.hint
+			}
+			if !found {
+				t.Fatalf("missing hint %q", tc.hint)
+			}
+		})
+	}
+	m := loadText(t, "version=1\nharnesses=['claude-code']\nmcp=[{name='shared',harnesses=['pi']}]")
+	if p := m.Validate(lib); len(p) != 1 || !strings.Contains(p[0].Message, "not selected") {
+		t.Fatal(p)
+	}
+}

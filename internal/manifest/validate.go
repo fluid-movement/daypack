@@ -4,10 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"sort"
 
 	"github.com/fluid-movement/daypack/internal/library"
 )
+
+var knownHarnesses = []string{"claude-code", "pi"}
 
 var namePattern = regexp.MustCompile(`^[a-z0-9-]{1,64}$`)
 
@@ -23,9 +26,10 @@ func (m *Manifest) ValidateForApply(lib *library.Library) []Problem {
 
 func (m *Manifest) validate(lib *library.Library, deferMissing bool) []Problem {
 	out := append([]Problem{}, m.problems...)
-	add := func(field, message string) {
-		out = append(out, Problem{Severity: library.Error, File: m.path, Field: field, Message: message})
+	addHint := func(field, message, hint string) {
+		out = append(out, Problem{Severity: library.Error, File: m.path, Field: field, Message: message, Hint: hint})
 	}
+	add := func(field, message string) { addHint(field, message, "") }
 	selected := map[string]bool{}
 	checkHarnesses := func(harnesses []string, field string, restriction bool) {
 		if len(harnesses) == 0 {
@@ -33,8 +37,8 @@ func (m *Manifest) validate(lib *library.Library, deferMissing bool) []Problem {
 		}
 		seen := map[string]bool{}
 		for _, h := range harnesses {
-			if h != "claude-code" && h != "pi" {
-				add(field, fmt.Sprintf("unknown harness %q", h))
+			if !slices.Contains(knownHarnesses, h) {
+				addHint(field, fmt.Sprintf("unknown harness %q", h), fmt.Sprintf("did you mean %q?", library.Closest(h, knownHarnesses)))
 			}
 			if seen[h] {
 				add(field, fmt.Sprintf("duplicate harness %q", h))
@@ -103,7 +107,13 @@ func (m *Manifest) validate(lib *library.Library, deferMissing bool) []Problem {
 				continue
 			}
 			var invalid *library.ValidationError
-			if errors.As(err, &invalid) {
+			if errors.As(err, &missing) {
+				hint := ""
+				if missing.Closest != "" {
+					hint = fmt.Sprintf("did you mean %s:%s?", missing.Type, missing.Closest)
+				}
+				addHint(field, err.Error(), hint)
+			} else if errors.As(err, &invalid) {
 				add(field, ref+" has library validation errors")
 				for _, p := range invalid.Problems {
 					p.Field = field + "." + p.Field

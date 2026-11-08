@@ -54,3 +54,18 @@ func distance(a, b string) int {
 	}
 	return row[len(b)]
 }
+
+// Closest returns the candidate nearest to name by edit distance, preferring the
+// alphabetically first on ties; it is empty when there are no candidates.
+func Closest(name string, candidates []string) string {
+	closest := ""
+	best := int(^uint(0) >> 1)
+	for _, c := range candidates {
+		d := distance(name, c)
+		if d < best || (d == best && c < closest) {
+			best = d
+			closest = c
+		}
+	}
+	return closest
+}

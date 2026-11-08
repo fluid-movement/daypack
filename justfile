@@ -2,9 +2,32 @@
 default:
     @just --list
 
-# Build the daypack binary in bin/.
+version_pkg := "github.com/fluid-movement/daypack/internal/cli"
+
+# Build the daypack binary in bin/, stamped with the git version.
 build:
-    go build -o bin/daypack ./cmd/daypack
+    CGO_ENABLED=0 go build -trimpath -ldflags "-X {{version_pkg}}.version=$(git describe --tags --always --dirty)" -o bin/daypack ./cmd/daypack
+
+# Cross-compile and package macOS and Linux (arm64, amd64) archives into dist/, as the release workflow does.
+dist:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    tag="${TAG:-$(git describe --tags --always --dirty)}"
+    rm -rf dist stage
+    mkdir -p dist
+    for goos in darwin linux; do
+      for goarch in arm64 amd64; do
+        name="daypack_${tag}_${goos}_${goarch}"
+        mkdir -p "stage/${name}"
+        CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" go build -trimpath -ldflags "-s -w -X {{version_pkg}}.version=${tag}" -o "stage/${name}/daypack" ./cmd/daypack
+        cp README.md "stage/${name}/"
+        if [ -f LICENSE ]; then cp LICENSE "stage/${name}/"; fi
+        tar -C stage -czf "dist/${name}.tar.gz" "${name}"
+      done
+    done
+    rm -rf stage
+    (cd dist && { sha256sum *.tar.gz 2>/dev/null || shasum -a 256 *.tar.gz; } > checksums.txt)
+    ls dist
 
 # Build and install daypack, warning if the destination is outside PATH.
 install: build
@@ -51,7 +74,7 @@ ci: check lint
 
 # Remove generated binaries.
 clean:
-    rm -rf bin/
+    rm -rf bin/ dist/ stage/
 
 # Run daypack with the supplied arguments.
 run *args:

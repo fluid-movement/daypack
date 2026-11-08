@@ -1,0 +1,64 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5.0.0
+      - uses: actions/setup-go@v6.0.0
+        with:
+          go-version-file: go.mod
+      - run: go vet ./...
+      - run: go test ./...
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [darwin, linux]
+        goarch: [arm64, amd64]
+    steps:
+      - uses: actions/checkout@v5.0.0
+      - uses: actions/setup-go@v6.0.0
+        with:
+          go-version-file: go.mod
+      - name: Build and package
+        env:
+          CGO_ENABLED: '0'
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          name="daypack_${TAG}_${GOOS}_${GOARCH}"
+          mkdir -p "stage/${name}" dist
+          go build -trimpath -ldflags "-s -w -X github.com/fluid-movement/daypack/internal/cli.version=${TAG}" -o "stage/${name}/daypack" ./cmd/daypack
+          cp README.md "stage/${name}/"
+          if [ -f LICENSE ]; then cp LICENSE "stage/${name}/"; fi
+          tar -C stage -czf "dist/${name}.tar.gz" "${name}"
+      - uses: actions/upload-artifact@v4.6.2
+        with:
+          name: daypack_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: dist/*.tar.gz
+          if-no-files-found: error
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v5.0.0
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        run: cd dist && sha256sum *.tar.gz > checksums.txt
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" --generate-notes dist/*

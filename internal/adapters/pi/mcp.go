@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/fluid-movement/daypack/internal/adapters/contract"
+	"github.com/fluid-movement/daypack/internal/adapters/skilldir"
 	"github.com/fluid-movement/daypack/internal/library"
 )
 
@@ -15,24 +16,34 @@ type Adapter struct{}
 
 var _ contract.Adapter = (*Adapter)(nil)
 
-func New() *Adapter                                    { return &Adapter{} }
-func (*Adapter) Name() string                          { return "pi" }
-func (*Adapter) Supports(t contract.ArtifactType) bool { return t == library.MCP }
+func New() *Adapter           { return &Adapter{} }
+func (*Adapter) Name() string { return "pi" }
+func (*Adapter) Supports(t contract.ArtifactType) bool {
+	return t == library.Skill || t == library.MCP
+}
 func (*Adapter) Targets() []contract.Target {
-	return []contract.Target{{ID: contract.PiMCPJSON, Root: ".pi/mcp.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}}}
+	return []contract.Target{
+		skilldir.AgentsTarget(),
+		{ID: contract.PiMCPJSON, Root: ".pi/mcp.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
+	}
 }
 func (a *Adapter) Desired(e contract.Entry, _ contract.Project) ([]contract.Item, error) {
-	if !a.Supports(e.Artifact.Type) {
-		return nil, nil
+	switch e.Artifact.Type {
+	case library.Skill:
+		return skilldir.Desired(e, skilldir.AgentsTarget())
+	case library.MCP:
+		return mcpItems(e)
 	}
-	return mcpItems(e)
+	return nil, nil
 }
 func (*Adapter) Notes(p contract.Project) []contract.Note {
 	if !slices.Contains(p.Harnesses, "pi") {
 		return nil
 	}
-	return []contract.Note{{Harness: "pi", Code: "project-trust-required", Message: "Pi loads project .pi/mcp.json only after project trust is granted (/trust); untrusted project config may be silently skipped in non-interactive mode."}}
+	return []contract.Note{{Harness: "pi", Code: "project-trust-required", Message: trustMessage}}
 }
+
+const trustMessage = "Pi loads project .agents/skills and .pi/mcp.json only after project trust is granted (/trust); untrusted project config may be silently skipped in non-interactive (headless) mode."
 
 // Transport-specific structs keep unrelated fields and policy metadata out.
 type stdioServer struct {

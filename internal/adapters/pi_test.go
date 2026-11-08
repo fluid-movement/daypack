@@ -77,7 +77,7 @@ func TestRealPiSelectionAndReaders(t *testing.T) {
 			t.Fatal("reader registered", name)
 		}
 	}
-	for _, typ := range []library.ArtifactType{library.MCP, library.Agent, library.Fragment} {
+	for _, typ := range []library.ArtifactType{library.Agent, library.Fragment} {
 		e.Artifact.Type = typ
 		e.Ref = string(typ) + ":testing"
 		got := desired(t, r, []contract.Entry{e}, "pi")

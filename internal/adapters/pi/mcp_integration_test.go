@@ -204,7 +204,7 @@ func TestPiProjectTrustNote(t *testing.T) {
 			t.Fatal("incorrect selected-project notes")
 		}
 		if tc.count == 1 {
-			expected := []contract.Note{{Harness: "pi", Code: "project-trust-required", Message: "Pi loads project .pi/mcp.json only after project trust is granted (/trust); untrusted project config may be silently skipped in non-interactive mode."}}
+			expected := []contract.Note{{Harness: "pi", Code: "project-trust-required", Message: "Pi loads project .agents/skills and .pi/mcp.json only after project trust is granted (/trust); untrusted project config may be silently skipped in non-interactive (headless) mode."}}
 			if !reflect.DeepEqual(result.Notes, expected) {
 				t.Fatal("trust note changed")
 			}

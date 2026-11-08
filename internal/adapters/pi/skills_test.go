@@ -23,7 +23,7 @@ func TestPureRenderer(t *testing.T) {
 	a := pi.New()
 	p := contract.Project{Root: filepath.Join(string(filepath.Separator), "nonexistent project"), Harnesses: []string{"pi"}}
 	cases := []testadapter.Case{{Entry: skill("testing"), Project: p, Supported: true}}
-	for _, typ := range []library.ArtifactType{library.MCP, library.Agent, library.Fragment} {
+	for _, typ := range []library.ArtifactType{library.Agent, library.Fragment} {
 		e := skill("testing")
 		e.Artifact.Type = typ
 		cases = append(cases, testadapter.Case{Entry: e, Project: p})
@@ -44,6 +44,7 @@ func TestPureRenderer(t *testing.T) {
 	targets := a.Targets()
 	expected := []contract.Target{
 		{ID: contract.AgentsSkillsDir, Root: ".agents/skills", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Skill}},
+		{ID: contract.PiMCPJSON, Root: ".pi/mcp.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
 	}
 	if !reflect.DeepEqual(targets, expected) || a.Name() != "pi" || len(a.Notes(p)) != 1 {
 		t.Fatal("declarations")
@@ -111,9 +112,9 @@ func TestSkillsGolden(t *testing.T) {
 
 func TestTrustAdvice(t *testing.T) {
 	a := pi.New()
-	p := contract.Project{Root: "/nonexistent project"}
+	p := contract.Project{Root: "/nonexistent project", Harnesses: []string{"pi"}}
 	notes := a.Notes(p)
-	if len(notes) != 1 || notes[0].Harness != "pi" || notes[0].Code != "project-trust" || !strings.Contains(notes[0].Message, "/trust") || !strings.Contains(notes[0].Message, "headless") {
+	if len(notes) != 1 || notes[0].Harness != "pi" || notes[0].Code != "project-trust-required" || !strings.Contains(notes[0].Message, "/trust") || !strings.Contains(notes[0].Message, "headless") {
 		t.Fatal(notes)
 	}
 	notes[0].Message = "changed"

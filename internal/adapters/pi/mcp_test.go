@@ -69,7 +69,7 @@ func TestMCPItems(t *testing.T) {
 	testutil.AssertJSONGolden(t, "testdata/mcp-items.json", encoded)
 	testutil.AssertTree(t, f.Project, before)
 	testutil.AssertTree(t, f.Library, libraryBefore)
-	unsupported := contract.Entry{Artifact: library.Artifact{Type: library.Skill}}
+	unsupported := contract.Entry{Artifact: library.Artifact{Type: library.Agent}}
 	if items, err := pi.New().Desired(unsupported, contract.Project{}); err != nil || len(items) != 0 {
 		t.Fatal("unsupported type rendered")
 	}

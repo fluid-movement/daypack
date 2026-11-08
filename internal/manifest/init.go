@@ -20,8 +20,6 @@ type InitOptions struct {
 	From      string
 }
 
-var knownHarnesses = []string{"claude-code", "pi"}
-
 // NormalizeHarnesses validates a harness selection and returns it in canonical
 // order. An empty selection means both harnesses.
 func NormalizeHarnesses(selected []string) ([]string, error) {

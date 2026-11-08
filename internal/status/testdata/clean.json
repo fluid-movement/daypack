@@ -1,0 +1,68 @@
+{
+  "command": "daypack status",
+  "ok": true,
+  "status": {
+    "changes": {
+      "notes": [
+        {
+          "Code": "mcp-approval",
+          "Harness": "claude-code",
+          "Message": "Claude Code may require approving project MCP servers on first use; approve them via /mcp (or list them in enabledMcpjsonServers in .claude/settings.local.json)."
+        }
+      ],
+      "operations": [],
+      "outcomes": {
+        "applied": 0,
+        "failed": 0,
+        "planned": 0,
+        "skipped": 0,
+        "unchanged": 0
+      },
+      "summary": {
+        "conflict": 0,
+        "create": 0,
+        "drift": 0,
+        "remove": 0,
+        "unresolved": 0,
+        "update": 0
+      }
+    },
+    "checks": [],
+    "entries": [
+      {
+        "entry": "agent:reviewer",
+        "harness": "claude-code",
+        "operations": [],
+        "state": "ok"
+      },
+      {
+        "entry": "skill:testing",
+        "harness": "claude-code",
+        "operations": [],
+        "state": "ok"
+      }
+    ],
+    "readers": [
+      {
+        "other_readers": [],
+        "readers": [
+          "claude-code"
+        ],
+        "selected": [
+          "claude-code"
+        ],
+        "target": "claude-agents-dir"
+      },
+      {
+        "other_readers": [],
+        "readers": [
+          "claude-code"
+        ],
+        "selected": [
+          "claude-code"
+        ],
+        "target": "claude-skills-dir"
+      }
+    ]
+  }
+}

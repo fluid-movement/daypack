@@ -1,0 +1,12 @@
+Entries:
+  agent:reviewer claude-code: drift
+  skill:testing claude-code: ok
+Changes:
+  ? drift agent:reviewer .claude/agents/reviewer.md [managed content changed; use --force]
+Checks:
+  error managed-path-drift entry="agent:reviewer" path=".claude/agents/reviewer.md": managed content was changed
+Readers:
+  claude-agents-dir: selected [claude-code]; also read by []
+  claude-skills-dir: selected [claude-code]; also read by []
+note claude-code mcp-approval: Claude Code may require approving project MCP servers on first use; approve them via /mcp (or list them in enabledMcpjsonServers in .claude/settings.local.json).
+Needs attention.

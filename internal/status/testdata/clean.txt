@@ -1,0 +1,8 @@
+Entries:
+  agent:reviewer claude-code: ok
+  skill:testing claude-code: ok
+Readers:
+  claude-agents-dir: selected [claude-code]; also read by []
+  claude-skills-dir: selected [claude-code]; also read by []
+note claude-code mcp-approval: Claude Code may require approving project MCP servers on first use; approve them via /mcp (or list them in enabledMcpjsonServers in .claude/settings.local.json).
+All ok.

@@ -1,3 +1,9 @@
 - [ ] go build produces a single binary with no cgo dependency
 - [ ] A tag-triggered workflow publishes macOS and Linux archives
 - [ ] README documents install via go install and the secrets.env shell-profile line
+- [ ] go build produces a single static binary with no cgo dependency (CGO_ENABLED=0 builds succeed for darwin and linux x arm64 and amd64; go version -m shows CGO_ENABLED=0)
+- [ ] A 'daypack version' command prints the version; a build with -ldflags '-X <pkg>.version=v0.0.0-test' prints v0.0.0-test, an unstamped build prints dev or the module build-info version; covered by a unit test
+- [ ] .github/workflows/release.yml triggers on tags v*, builds the macOS and Linux arm64/amd64 matrix with plain go build (CGO_ENABLED=0, -trimpath, version -ldflags), packages tar.gz archives, produces a sha256 checksums.txt, and creates the GitHub release; no GoReleaser, no Homebrew; YAML is valid
+- [ ] justfile build stamps the version, and a local recipe cross-compiles and packages all four targets into dist/ using the same flags as the workflow
+- [ ] README.md documents install via go install, via release archive download (with checksum verification), and from source, plus the secrets.env shell-profile snippet consistent with docs/secrets.md
+- [ ] just check passes, and nothing is tagged, pushed, or published (live release and go install @latest are left for a follow-up manual check)

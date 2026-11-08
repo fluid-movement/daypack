@@ -2,3 +2,6 @@
 - [ ] list works outside a project (no marks)
 - [ ] A manifest referencing an unknown name fails validation with the closest-name suggestion
 - [ ] list --json returns the same data
+- [ ] list shows library artifacts grouped by type (skill, mcp, fragment, agent) in a fixed order with name and one-line description from artifact metadata; project-used entries are marked with their effective harnesses
+- [ ] list works outside a project (no daypack.toml found): exit 0, no marks; with a missing library it exits 1 with the library init hint
+- [ ] list [type] filters to one type; an unknown type exits 2 with a usage hint listing valid types

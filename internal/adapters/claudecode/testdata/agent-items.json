@@ -1,0 +1,68 @@
+[
+  {
+    "Bytes": "LS0tCm5hbWU6IHJldmlld2VyCmRlc2NyaXB0aW9uOiBSZXZpZXcgY2hhbmdlcwp0b29sczogW1JlYWQsIEdyZXBdCm1vZGVsOiBzb25uZXQKcGVybWlzc2lvbk1vZGU6IHBsYW4KbWNwU2VydmVyczogW2RvY3NdCnVua25vd246IHtmdXR1cmU6IHRydWV9Ci0tLQpSZXZpZXcgJHtEQVlQQUNLX1RFU1RfU0VDUkVUfS4KU2Vjb25kIGxpbmUuCg==",
+    "Entry": "agent:reviewer",
+    "Key": "",
+    "Kind": "file",
+    "Link": "",
+    "Marker": "",
+    "Path": ".claude/agents/reviewer.md",
+    "Target": "claude-agents-dir",
+    "Value": null
+  },
+  {
+    "Bytes": "LS0tCm5hbWU6IHJldmlld2VyCmRlc2NyaXB0aW9uOiBSZXZpZXcgY2hhbmdlcwp0b29sczogW1JlYWQsIEdyZXBdCm1vZGVsOiBzb25uZXQKcGVybWlzc2lvbk1vZGU6IHBsYW4KbWNwU2VydmVyczogW2RvY3NdCnVua25vd246IHtmdXR1cmU6IHRydWV9Ci0tLQpSZXZpZXcgJHtEQVlQQUNLX1RFU1RfU0VDUkVUfS4KU2Vjb25kIGxpbmUu",
+    "Entry": "agent:reviewer",
+    "Key": "",
+    "Kind": "file",
+    "Link": "",
+    "Marker": "",
+    "Path": ".claude/agents/reviewer.md",
+    "Target": "claude-agents-dir",
+    "Value": null
+  },
+  {
+    "Bytes": "LS0tDQpuYW1lOiByZXZpZXdlcg0KZGVzY3JpcHRpb246IFJldmlldyBjaGFuZ2VzDQp0b29sczogW1JlYWQsIEdyZXBdDQptb2RlbDogc29ubmV0DQpwZXJtaXNzaW9uTW9kZTogcGxhbg0KbWNwU2VydmVyczogW2RvY3NdDQp1bmtub3duOiB7ZnV0dXJlOiB0cnVlfQ0KLS0tDQpSZXZpZXcgJHtEQVlQQUNLX1RFU1RfU0VDUkVUfS4NClNlY29uZCBsaW5lLg0K",
+    "Entry": "agent:reviewer",
+    "Key": "",
+    "Kind": "file",
+    "Link": "",
+    "Marker": "",
+    "Path": ".claude/agents/reviewer.md",
+    "Target": "claude-agents-dir",
+    "Value": null
+  },
+  {
+    "Bytes": "LS0tCm5hbWU6IHBsYW5uZXIKZGVzY3JpcHRpb246IFJldmlldyBjaGFuZ2VzCnRvb2xzOiBbUmVhZCwgR3JlcF0KbW9kZWw6IHNvbm5ldApwZXJtaXNzaW9uTW9kZTogcGxhbgptY3BTZXJ2ZXJzOiBbZG9jc10KdW5rbm93bjoge2Z1dHVyZTogdHJ1ZX0KLS0tClJldmlldyAke0RBWVBBQ0tfVEVTVF9TRUNSRVR9LgpTZWNvbmQgbGluZS4K",
+    "Entry": "agent:planner",
+    "Key": "",
+    "Kind": "file",
+    "Link": "",
+    "Marker": "",
+    "Path": ".claude/agents/planner.md",
+    "Target": "claude-agents-dir",
+    "Value": null
+  },
+  {
+    "Bytes": "LS0tCm5hbWU6IHBsYW5uZXIKZGVzY3JpcHRpb246IFJldmlldyBjaGFuZ2VzCnRvb2xzOiBbUmVhZCwgR3JlcF0KbW9kZWw6IHNvbm5ldApwZXJtaXNzaW9uTW9kZTogcGxhbgptY3BTZXJ2ZXJzOiBbZG9jc10KdW5rbm93bjoge2Z1dHVyZTogdHJ1ZX0KLS0tClJldmlldyAke0RBWVBBQ0tfVEVTVF9TRUNSRVR9LgpTZWNvbmQgbGluZS4=",
+    "Entry": "agent:planner",
+    "Key": "",
+    "Kind": "file",
+    "Link": "",
+    "Marker": "",
+    "Path": ".claude/agents/planner.md",
+    "Target": "claude-agents-dir",
+    "Value": null
+  },
+  {
+    "Bytes": "LS0tDQpuYW1lOiBwbGFubmVyDQpkZXNjcmlwdGlvbjogUmV2aWV3IGNoYW5nZXMNCnRvb2xzOiBbUmVhZCwgR3JlcF0NCm1vZGVsOiBzb25uZXQNCnBlcm1pc3Npb25Nb2RlOiBwbGFuDQptY3BTZXJ2ZXJzOiBbZG9jc10NCnVua25vd246IHtmdXR1cmU6IHRydWV9DQotLS0NClJldmlldyAke0RBWVBBQ0tfVEVTVF9TRUNSRVR9Lg0KU2Vjb25kIGxpbmUuDQo=",
+    "Entry": "agent:planner",
+    "Key": "",
+    "Kind": "file",
+    "Link": "",
+    "Marker": "",
+    "Path": ".claude/agents/planner.md",
+    "Target": "claude-agents-dir",
+    "Value": null
+  }
+]

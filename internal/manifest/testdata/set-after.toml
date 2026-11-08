@@ -1,0 +1,10 @@
+# Project settings
+version = 1
+harnesses = ["claude-code", "pi"] # keep both
+
+skills = ["one", "two"] # skills tail
+mcp = [{ name = "docs", harnesses = ["claude-code"] }, "web"]
+
+[inline.mcp.local]
+type = "stdio"
+command = "echo"

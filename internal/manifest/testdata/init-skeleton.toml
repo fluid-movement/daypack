@@ -1,0 +1,13 @@
+# daypack manifest: the AI configuration this project uses.
+version = 1
+harnesses = ["claude-code", "pi"]
+
+# Library references, by name. A table restricts an entry to some harnesses:
+#   { name = "context7", harnesses = ["claude-code"] }
+# Add entries with 'daypack add <type>:<name>' or edit this file by hand.
+# skills = ["name"]
+# mcp = ["name"]
+# fragments = []
+# agents = []
+
+# Run 'daypack apply' to write these into the project.

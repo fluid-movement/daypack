@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -14,17 +15,61 @@ import (
 // AddEntry inserts a library reference without re-encoding the document. Only
 // single-line arrays with simple root keys are edited; other layouts fail safely.
 func AddEntry(data []byte, kind library.ArtifactType, entry Entry) ([]byte, error) {
-	return edit(data, kind, entry, true)
+	return edit(data, kind, entry, opAdd)
+}
+
+// SetEntry upserts a library reference: a missing name is added, an existing one
+// has only its element rewritten. changed is false when the bytes are identical.
+func SetEntry(data []byte, kind library.ArtifactType, entry Entry) (out []byte, changed bool, err error) {
+	out, err = edit(data, kind, entry, opSet)
+	if err != nil {
+		return nil, false, err
+	}
+	return out, !bytes.Equal(out, data), nil
+}
+
+// HasEntry reports whether the manifest lists a library reference in its arrays.
+func HasEntry(m *Manifest, kind library.ArtifactType, name string) bool {
+	for i, g := range arrayKinds {
+		if g.kind != kind {
+			continue
+		}
+		for _, e := range [][]Entry{m.Skills, m.MCP, m.Fragments, m.Agents}[i] {
+			if e.Name == name {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// HasInline reports whether name is an inline MCP server table.
+func HasInline(m *Manifest, name string) bool {
+	for _, e := range m.InlineMCP {
+		if e.Name == name {
+			return true
+		}
+	}
+	return false
 }
 
 // RemoveEntry removes a library reference, preserving unrelated source bytes.
 func RemoveEntry(data []byte, kind library.ArtifactType, name string) ([]byte, error) {
-	return edit(data, kind, Entry{Name: name}, false)
+	return edit(data, kind, Entry{Name: name}, opRemove)
 }
 
 type span struct{ start, end int }
 
-func edit(data []byte, kind library.ArtifactType, entry Entry, add bool) ([]byte, error) {
+type editOp int
+
+const (
+	opAdd editOp = iota
+	opRemove
+	opSet
+)
+
+func edit(data []byte, kind library.ArtifactType, entry Entry, op editOp) ([]byte, error) {
+	add := op != opRemove
 	m, err := parse(data, "daypack.toml")
 	if err != nil {
 		return nil, err
@@ -47,32 +92,15 @@ func edit(data []byte, kind library.ArtifactType, entry Entry, add bool) ([]byte
 	if entry.Inline != nil || (entry.Type != "" && entry.Type != kind) {
 		return nil, fmt.Errorf("entry must be a %s library reference", kind)
 	}
-	if add && entry.Harnesses != nil {
-		if len(entry.Harnesses) == 0 {
-			return nil, fmt.Errorf("entry harness selection must not be empty")
+	if add {
+		if kind == library.MCP && HasInline(m, entry.Name) {
+			return nil, fmt.Errorf("mcp:%s is an inline server; edit daypack.toml by hand", entry.Name)
 		}
-		seen := map[string]bool{}
-		for _, h := range entry.Harnesses {
-			selected := false
-			for _, s := range m.Harnesses {
-				if h == s {
-					selected = true
-				}
-			}
-			if (h != "claude-code" && h != "pi") || !selected || seen[h] {
-				return nil, fmt.Errorf("invalid harness selection for %s:%s", kind, entry.Name)
-			}
-			seen[h] = true
+		if err := checkHarnesses(m, kind, entry); err != nil {
+			return nil, err
 		}
 	}
-	rendered := strconv.Quote(entry.Name)
-	if entry.Harnesses != nil {
-		h := make([]string, len(entry.Harnesses))
-		for i, s := range entry.Harnesses {
-			h[i] = strconv.Quote(s)
-		}
-		rendered = "{ name = " + rendered + ", harnesses = [" + strings.Join(h, ", ") + "] }"
-	}
+	rendered := renderEntry(entry)
 	action := "remove"
 	if add {
 		action = "add"
@@ -89,8 +117,12 @@ func edit(data []byte, kind library.ArtifactType, entry Entry, add bool) ([]byte
 			index = i
 		}
 	}
-	if add && index != -1 {
+	if op == opAdd && index != -1 {
 		return nil, fmt.Errorf("%s:%s is already present", kind, entry.Name)
+	}
+	if op == opSet && index != -1 && slices.Equal(entries[index].Harnesses, entry.Harnesses) &&
+		(entries[index].Harnesses == nil) == (entry.Harnesses == nil) {
+		return bytes.Clone(data), nil
 	}
 	if !add && index == -1 {
 		return bytes.Clone(data), nil
@@ -138,7 +170,9 @@ func edit(data []byte, kind library.ArtifactType, entry Entry, add bool) ([]byte
 		if !ok || len(elements) != len(entries) {
 			return manual()
 		}
-		if add {
+		if op == opSet && index != -1 {
+			result = splice(data, elements[index].start, elements[index].end, []byte(rendered))
+		} else if add {
 			pos := open + 1
 			text := rendered
 			if len(elements) > 0 {
@@ -235,4 +269,33 @@ func arraySpans(data []byte, open int) ([]span, int, bool) {
 		last = i + 1
 	}
 	return nil, 0, false
+}
+
+func checkHarnesses(m *Manifest, kind library.ArtifactType, entry Entry) error {
+	if entry.Harnesses == nil {
+		return nil
+	}
+	if len(entry.Harnesses) == 0 {
+		return fmt.Errorf("entry harness selection must not be empty")
+	}
+	seen := map[string]bool{}
+	for _, h := range entry.Harnesses {
+		if (h != "claude-code" && h != "pi") || !slices.Contains(m.Harnesses, h) || seen[h] {
+			return fmt.Errorf("invalid harness selection for %s:%s", kind, entry.Name)
+		}
+		seen[h] = true
+	}
+	return nil
+}
+
+func renderEntry(entry Entry) string {
+	rendered := strconv.Quote(entry.Name)
+	if entry.Harnesses == nil {
+		return rendered
+	}
+	h := make([]string, len(entry.Harnesses))
+	for i, s := range entry.Harnesses {
+		h[i] = strconv.Quote(s)
+	}
+	return "{ name = " + rendered + ", harnesses = [" + strings.Join(h, ", ") + "] }"
 }

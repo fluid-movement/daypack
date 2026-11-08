@@ -16,13 +16,15 @@ func New() *Adapter { return &Adapter{} }
 func (*Adapter) Name() string { return "claude-code" }
 
 func (*Adapter) Supports(t contract.ArtifactType) bool {
-	return t == library.Skill || t == library.Agent
+	return t == library.Skill || t == library.Agent || t == library.MCP
 }
 
 func (*Adapter) Targets() []contract.Target {
 	return []contract.Target{
 		{ID: contract.ClaudeSkillsDir, Root: ".claude/skills", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Skill}},
 		{ID: contract.ClaudeAgentsDir, Root: ".claude/agents", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Agent}},
+		{ID: contract.ClaudeMCPJSON, Root: ".mcp.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
+		{ID: contract.ClaudeMCPApproval, Root: ".claude/settings.local.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
 	}
 }
 
@@ -32,6 +34,9 @@ func (a *Adapter) Desired(e contract.Entry, _ contract.Project) ([]contract.Item
 	}
 	if e.Artifact.Type == library.Agent {
 		return agentItems(e)
+	}
+	if e.Artifact.Type == library.MCP {
+		return mcpItems(e)
 	}
 	return skilldir.Desired(e, a.Targets()[0])
 }

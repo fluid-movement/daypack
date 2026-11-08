@@ -45,6 +45,8 @@ func TestAgentItems(t *testing.T) {
 	wantTargets := []contract.Target{
 		{ID: contract.ClaudeSkillsDir, Root: ".claude/skills", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Skill}},
 		{ID: contract.ClaudeAgentsDir, Root: ".claude/agents", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Agent}},
+		{ID: contract.ClaudeMCPJSON, Root: ".mcp.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
+		{ID: contract.ClaudeMCPApproval, Root: ".claude/settings.local.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
 	}
 	if !reflect.DeepEqual(a.Targets(), wantTargets) {
 		t.Fatal(a.Targets())
@@ -84,7 +86,7 @@ func TestAgentItems(t *testing.T) {
 		t.Fatal(err)
 	}
 	testutil.AssertJSONGolden(t, "testdata/agent-items.json", data)
-	for _, typ := range []library.ArtifactType{library.MCP, library.Fragment} {
+	for _, typ := range []library.ArtifactType{library.Fragment} {
 		e := contract.Entry{Artifact: library.Artifact{Type: typ}}
 		testadapter.CheckAdapter(t, a, []testadapter.Case{{Entry: e, Supported: false}})
 		items, err := a.Desired(e, p)

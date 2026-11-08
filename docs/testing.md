@@ -67,6 +67,12 @@ command/args/url change. Apply tests must cover no-TTY behavior: skip gated
 operations, apply other operations, return 3. Secret-safety scenarios use the
 sentinel helpers on both success and error paths.
 
+Claude MCP adapter tests cover the library/inline renderer and compose its items
+with the existing lock APIs for adoption, drift, cleanup, tracking and worktree
+exclusion. These are offline composition tests, not production apply/status CLI
+coverage. Live Claude approval in a never-trusted folder and settings lookup in a
+worktree remain separate manual checks requiring user approval.
+
 ## Verification
 
 Run `go build ./...`, `go vet ./...`, `go test ./...`,

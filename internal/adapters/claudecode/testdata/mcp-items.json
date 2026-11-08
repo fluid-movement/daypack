@@ -1,0 +1,90 @@
+[
+  {
+    "Bytes": null,
+    "Entry": "mcp:docs",
+    "Key": "mcpServers.docs",
+    "Kind": "json-entry",
+    "Link": "",
+    "Marker": "",
+    "Path": ".mcp.json",
+    "Target": "claude-mcp-json",
+    "Value": "eyJjb21tYW5kIjoiJHtCSU46LWVjaG99IiwiYXJncyI6WyItLXRva2VuIiwiJHtEQVlQQUNLX1RFU1RfU0VDUkVUfSIsIm9uZSBhcmd1bWVudCIsIiR7T1BUSU9OOi1kZWZhdWx0fSJdLCJlbnYiOnsiUEFUSCI6InByZWZpeC8ke0RJUjotYmlufSIsIlRPS0VOIjoiJHtEQVlQQUNLX1RFU1RfU0VDUkVUfSJ9fQ=="
+  },
+  {
+    "Bytes": null,
+    "Entry": "mcp:docs",
+    "Key": "enabledMcpjsonServers",
+    "Kind": "json-array-element",
+    "Link": "",
+    "Marker": "",
+    "Path": ".claude/settings.local.json",
+    "Target": "claude-mcp-approval",
+    "Value": "ImRvY3Mi"
+  },
+  {
+    "Bytes": null,
+    "Entry": "mcp:remote",
+    "Key": "mcpServers.remote",
+    "Kind": "json-entry",
+    "Link": "",
+    "Marker": "",
+    "Path": ".mcp.json",
+    "Target": "claude-mcp-json",
+    "Value": "eyJ0eXBlIjoiaHR0cCIsInVybCI6IiR7QkFTRTotaHR0cHM6Ly9leGFtcGxlLmludmFsaWR9LyR7UkVTT1VSQ0V9IiwiaGVhZGVycyI6eyJBdXRob3JpemF0aW9uIjoiQmVhcmVyICR7REFZUEFDS19URVNUX1NFQ1JFVH0iLCJYLU1vZGUiOiIke01PREU6LXRlc3R9In19"
+  },
+  {
+    "Bytes": null,
+    "Entry": "mcp:remote",
+    "Key": "enabledMcpjsonServers",
+    "Kind": "json-array-element",
+    "Link": "",
+    "Marker": "",
+    "Path": ".claude/settings.local.json",
+    "Target": "claude-mcp-approval",
+    "Value": "InJlbW90ZSI="
+  },
+  {
+    "Bytes": null,
+    "Entry": "mcp:minimal",
+    "Key": "mcpServers.minimal",
+    "Kind": "json-entry",
+    "Link": "",
+    "Marker": "",
+    "Path": ".mcp.json",
+    "Target": "claude-mcp-json",
+    "Value": "eyJjb21tYW5kIjoiZWNobyJ9"
+  },
+  {
+    "Bytes": null,
+    "Entry": "mcp:minimal",
+    "Key": "enabledMcpjsonServers",
+    "Kind": "json-array-element",
+    "Link": "",
+    "Marker": "",
+    "Path": ".claude/settings.local.json",
+    "Target": "claude-mcp-approval",
+    "Value": "Im1pbmltYWwi"
+  },
+  {
+    "Bytes": null,
+    "Entry": "mcp:minimal-http",
+    "Key": "mcpServers.minimal-http",
+    "Kind": "json-entry",
+    "Link": "",
+    "Marker": "",
+    "Path": ".mcp.json",
+    "Target": "claude-mcp-json",
+    "Value": "eyJ0eXBlIjoiaHR0cCIsInVybCI6Imh0dHBzOi8vZXhhbXBsZS5pbnZhbGlkIn0="
+  },
+  {
+    "Bytes": null,
+    "Entry": "mcp:minimal-http",
+    "Key": "enabledMcpjsonServers",
+    "Kind": "json-array-element",
+    "Link": "",
+    "Marker": "",
+    "Path": ".claude/settings.local.json",
+    "Target": "claude-mcp-approval",
+    "Value": "Im1pbmltYWwtaHR0cCI="
+  }
+]

@@ -32,6 +32,8 @@ func TestDefaultClaudeAgents(t *testing.T) {
 	want := []contract.Target{
 		{ID: contract.AgentsSkillsDir, Root: ".agents/skills", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Skill}},
 		{ID: contract.ClaudeAgentsDir, Root: ".claude/agents", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Agent}},
+		{ID: contract.ClaudeMCPApproval, Root: ".claude/settings.local.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
+		{ID: contract.ClaudeMCPJSON, Root: ".mcp.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
 		{ID: contract.ClaudeSkillsDir, Root: ".claude/skills", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Skill}},
 		{ID: contract.PiMCPJSON, Root: ".pi/mcp.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
 	}

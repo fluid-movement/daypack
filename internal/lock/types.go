@@ -17,18 +17,19 @@ const (
 )
 
 type Item struct {
-	Target   string `toml:"target"`
-	Entry    string `toml:"entry"`
-	Kind     Kind   `toml:"kind"`
-	Path     string `toml:"path"`
-	Link     string `toml:"link,omitempty"`
-	Hash     string `toml:"hash,omitempty"`
-	File     string `toml:"file,omitempty"`
-	Key      string `toml:"key,omitempty"`
-	Value    string `toml:"value,omitempty"`
-	Marker   string `toml:"marker,omitempty"`
-	Tracked  bool   `toml:"tracked"`
-	Preserve bool   `toml:"preserve,omitempty"`
+	MCPIdentity string `toml:"mcp_identity,omitempty"`
+	Target      string `toml:"target"`
+	Entry       string `toml:"entry"`
+	Kind        Kind   `toml:"kind"`
+	Path        string `toml:"path"`
+	Link        string `toml:"link,omitempty"`
+	Hash        string `toml:"hash,omitempty"`
+	File        string `toml:"file,omitempty"`
+	Key         string `toml:"key,omitempty"`
+	Value       string `toml:"value,omitempty"`
+	Marker      string `toml:"marker,omitempty"`
+	Tracked     bool   `toml:"tracked"`
+	Preserve    bool   `toml:"preserve,omitempty"`
 }
 type Lock struct {
 	Version int

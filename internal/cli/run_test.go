@@ -86,6 +86,11 @@ func TestOutcomes(t *testing.T) {
 					}
 					parent.RemoveCommand(old)
 				}
+				for _, existing := range parent.Commands() {
+					if existing.Name() == leaf.Name() {
+						parent.RemoveCommand(existing)
+					}
+				}
 				parent.AddCommand(leaf)
 			})
 			if code != tt.code {
@@ -208,6 +213,11 @@ func TestInteractivity(t *testing.T) {
 						}
 						return Result{}, nil
 					})
+					for _, existing := range root.Commands() {
+						if existing.Name() == leaf.Name() {
+							root.RemoveCommand(existing)
+						}
+					}
 					root.AddCommand(leaf)
 				})
 				if requestedConfirmation != (terminal && !jsonMode && !yes) {

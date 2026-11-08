@@ -119,6 +119,11 @@ func observe(root string, i Item) (string, bool, error) {
 // RemoveOwned refuses drift/collisions and leaves shared containers in place.
 // The caller saves the lock after the successful batch.
 func (l *Lock) RemoveOwned(root string, i Item, roots []string) error {
+	return l.RemoveOwnedWithForce(root, i, roots, false)
+}
+
+// RemoveOwnedWithForce permits drifted content removal within the same safety guards.
+func (l *Lock) RemoveOwnedWithForce(root string, i Item, roots []string, force bool) error {
 	old, ok := l.Find(i)
 	if !ok {
 		return fmt.Errorf("unowned item")
@@ -127,7 +132,7 @@ func (l *Lock) RemoveOwned(root string, i Item, roots []string) error {
 	if err != nil {
 		return err
 	}
-	if obs.State == Drifted || obs.State == Collision {
+	if (obs.State == Drifted || obs.State == Collision) && !force {
 		return fmt.Errorf("refuse removal: %s", obs.State)
 	}
 	if err := ValidatePath(root, old.Path, roots); err != nil {
@@ -145,8 +150,22 @@ func (l *Lock) RemoveOwned(root string, i Item, roots []string) error {
 		if err := ValidatePath(root, old.Path, roots); err != nil {
 			return err
 		}
+		s, e := os.Lstat(p)
+		if e != nil {
+			return e
+		}
+		if !s.Mode().IsRegular() && s.Mode()&os.ModeSymlink == 0 {
+			return fmt.Errorf("refuse removal of non-file %s", old.Path)
+		}
 		err = os.Remove(p)
 	} else {
+		safety, e := os.Lstat(p)
+		if e != nil {
+			return e
+		}
+		if !safety.Mode().IsRegular() {
+			return fmt.Errorf("shared container must be regular")
+		}
 		var b []byte
 		b, err = os.ReadFile(p)
 		if err != nil {

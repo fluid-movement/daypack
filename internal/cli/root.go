@@ -86,7 +86,7 @@ func NewRootCommand(streams IO) *cobra.Command {
 		state.result.Help = buf.String()
 	})
 	root.RunE = func(cmd *cobra.Command, args []string) error { return cmd.Help() }
-	root.AddCommand(libraryCommand(streams, runEditor))
+	root.AddCommand(libraryCommand(streams, runEditor), applyCommand(streams))
 	return root
 }
 

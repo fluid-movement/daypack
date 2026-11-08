@@ -13,6 +13,15 @@ var namePattern = regexp.MustCompile(`^[a-z0-9-]{1,64}$`)
 
 // Validate resolves references without executing commands or expanding secrets.
 func (m *Manifest) Validate(lib *library.Library) []Problem {
+	return m.validate(lib, false)
+}
+
+// ValidateForApply defers missing references to reconciliation while retaining all other validation.
+func (m *Manifest) ValidateForApply(lib *library.Library) []Problem {
+	return m.validate(lib, true)
+}
+
+func (m *Manifest) validate(lib *library.Library, deferMissing bool) []Problem {
 	out := append([]Problem{}, m.problems...)
 	add := func(field, message string) {
 		out = append(out, Problem{Severity: library.Error, File: m.path, Field: field, Message: message})
@@ -89,6 +98,10 @@ func (m *Manifest) Validate(lib *library.Library) []Problem {
 			continue
 		}
 		if _, err := lib.Resolve(ref); err != nil {
+			var missing *library.NotFoundError
+			if deferMissing && errors.As(err, &missing) {
+				continue
+			}
 			var invalid *library.ValidationError
 			if errors.As(err, &invalid) {
 				add(field, ref+" has library validation errors")

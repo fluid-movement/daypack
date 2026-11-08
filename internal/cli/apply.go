@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"io"
+	"strings"
 
 	"github.com/fluid-movement/daypack/internal/adapters"
 	"github.com/fluid-movement/daypack/internal/apply"
+	"github.com/fluid-movement/daypack/internal/manifest"
 	"github.com/fluid-movement/daypack/internal/plan"
 	"github.com/spf13/cobra"
 )
@@ -17,44 +19,71 @@ func applyCommand(streams IO) *cobra.Command {
 
 func applyCommandWithRegistry(streams IO, registry func() (*adapters.Registry, error)) *cobra.Command {
 	cmd := &cobra.Command{Use: "apply", Short: "Reconcile project configuration with its manifest", Args: cobra.NoArgs}
-	var dryRun, yes, force, adopt bool
+	var dryRun, yes, force, adopt, auto bool
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Preview changes without writing")
 	cmd.Flags().BoolVar(&yes, "yes", false, "Approve inline MCP commands without prompting")
 	cmd.Flags().BoolVar(&force, "force", false, "Overwrite or remove drifted managed items")
 	cmd.Flags().BoolVar(&adopt, "adopt", false, "Take ownership of colliding items")
+	cmd.Flags().BoolVar(&auto, "auto", false, "Unattended apply for git hooks: library entries only, never prompts, exits 0")
 	SetHandler(cmd, func(ctx context.Context, options Options, _ []string) (Result, error) {
-		registered, err := registry()
-		if err != nil {
-			return Result{}, err
+		if !auto {
+			return runApply(ctx, options, streams, registry, apply.Options{Force: force, Adopt: adopt}, yes, dryRun)
 		}
-		r, err := apply.Prepare(ctx, options.ProjectDir, options.LibraryDir, registered, apply.Options{Force: force, Adopt: adopt})
-		if err != nil {
-			return Result{}, err
+		if force || adopt {
+			return Result{}, &Failure{Code: Usage, Cause: errors.New("--auto cannot be combined with --force or --adopt"), Hint: "Run 'daypack apply' manually to use them."}
 		}
-		p := r.Plan()
-		if plan.ConfirmationMode(p, options.Interactive && !options.JSON, yes, dryRun) == plan.Prompt && !options.Quiet {
-			out := streams.Err
-			if out == nil {
-				out = io.Discard
+		if _, err := manifest.FindProject(options.ProjectDir); errors.Is(err, manifest.ErrNoManifest) {
+			return Result{}, nil
+		}
+		// Auto never reads stdin, never prompts and never grants inline consent.
+		options.Interactive = false
+		unattended := streams
+		unattended.In = strings.NewReader("")
+		result, err := runApply(ctx, options, unattended, registry, apply.Options{Auto: true}, false, dryRun)
+		result.Code = Success
+		if err != nil {
+			var failure *Failure
+			if errors.As(err, &failure) {
+				err = failure.Cause
 			}
-			if err := plan.RenderText(out, p); err != nil {
-				return applyResult(p, Error, errors.New("could not write confirmation preview"))
-			}
+			return result, &Failure{Code: Success, Cause: err}
 		}
-		approved, err := ConfirmPlan(p, options, yes, dryRun, streams)
-		if err != nil {
-			return applyResult(p, Error, err)
-		}
-		if dryRun {
-			return PlanResult(approved, applyExitCode(approved, true))
-		}
-		final, err := r.Execute(ctx, approved)
-		if err != nil {
-			return applyResult(final, Error, err)
-		}
-		return PlanResult(final, applyExitCode(final, false))
+		return result, nil
 	})
 	return cmd
+}
+
+func runApply(ctx context.Context, options Options, streams IO, registry func() (*adapters.Registry, error), applyOptions apply.Options, yes, dryRun bool) (Result, error) {
+	registered, err := registry()
+	if err != nil {
+		return Result{}, err
+	}
+	r, err := apply.Prepare(ctx, options.ProjectDir, options.LibraryDir, registered, applyOptions)
+	if err != nil {
+		return Result{}, err
+	}
+	p := r.Plan()
+	if plan.ConfirmationMode(p, options.Interactive && !options.JSON, yes, dryRun) == plan.Prompt && !options.Quiet {
+		out := streams.Err
+		if out == nil {
+			out = io.Discard
+		}
+		if err := plan.RenderText(out, p); err != nil {
+			return applyResult(p, Error, errors.New("could not write confirmation preview"))
+		}
+	}
+	approved, err := ConfirmPlan(p, options, yes, dryRun, streams)
+	if err != nil {
+		return applyResult(p, Error, err)
+	}
+	if dryRun {
+		return PlanResult(approved, applyExitCode(approved, true))
+	}
+	final, err := r.Execute(ctx, approved)
+	if err != nil {
+		return applyResult(final, Error, err)
+	}
+	return PlanResult(final, applyExitCode(final, false))
 }
 
 func applyResult(p plan.Plan, code int, cause error) (Result, error) {

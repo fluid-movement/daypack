@@ -1,10 +1,14 @@
 package manifest
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 )
+
+// ErrNoManifest reports that no daypack.toml exists below the repository boundary.
+var ErrNoManifest = errors.New("no daypack.toml found; run daypack init")
 
 // FindProject searches from start through the nearest repository boundary.
 func FindProject(start string) (string, error) {
@@ -43,5 +47,5 @@ func FindProject(start string) (string, error) {
 		}
 		dir = parent
 	}
-	return "", fmt.Errorf("no daypack.toml found; run daypack init")
+	return "", ErrNoManifest
 }

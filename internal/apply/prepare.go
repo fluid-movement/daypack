@@ -16,7 +16,8 @@ import (
 	"github.com/fluid-movement/daypack/internal/plan"
 )
 
-type Options struct{ Force, Adopt bool }
+// Auto selects unattended policy: inline MCP entries are never applied.
+type Options struct{ Force, Adopt, Auto bool }
 
 // Prepare discovers and loads a project without creating any files.
 func Prepare(ctx context.Context, start, libraryDir string, registry *adapters.Registry, options Options) (*Reconciliation, error) {
@@ -78,11 +79,16 @@ func Build(ctx context.Context, root string, m *manifest.Manifest, lib *library.
 	}
 	r.project = contract.Project{Root: root, Harnesses: slices.Clone(project.Harnesses)}
 	var entries []contract.Entry
+	autoSkipped := false
 	for _, e := range m.Entries() {
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
 		ref := string(e.Type) + ":" + e.Name
+		if skipInlineForAuto(options, e) {
+			r.skipInline(ref, &autoSkipped)
+			continue
+		}
 		var artifact library.Artifact
 		var content []byte
 		if e.Inline == nil {

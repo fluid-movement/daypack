@@ -66,6 +66,19 @@ func (m *Manifest) Validate(lib *library.Library) []Problem {
 		seen[ref] = true
 		checkHarnesses(e.Harnesses, field+".harnesses", true)
 		if e.Inline != nil {
+			for _, p := range library.ValidateMCP(*e.Inline, m.path) {
+				p.Field = field + "." + p.Field
+				found := false
+				for _, existing := range out {
+					if existing == p {
+						found = true
+						break
+					}
+				}
+				if !found {
+					out = append(out, p)
+				}
+			}
 			if libraryMCP[e.Name] {
 				add(field, "inline MCP name collides with library MCP "+e.Name)
 			}

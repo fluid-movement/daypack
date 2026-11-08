@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/fluid-movement/daypack/internal/secrets"
 )
 
 type MCPDefinition struct {
@@ -51,7 +52,6 @@ func ParseMCP(data []byte, source string) (MCPDefinition, []Problem) {
 	return d, p
 }
 
-var reference = regexp.MustCompile(`\$\{([A-Za-z_][A-Za-z0-9_]*)(:-[^{}]*)?\}`)
 var secretKey = regexp.MustCompile(`(?i)(key|token|secret|password|passwd|auth|credential)`)
 
 func (d MCPDefinition) fields() map[string]string {
@@ -70,9 +70,13 @@ func (d MCPDefinition) fields() map[string]string {
 func (d MCPDefinition) RequiredVariables() []string {
 	set := map[string]bool{}
 	for _, v := range d.fields() {
-		for _, m := range reference.FindAllStringSubmatch(v, -1) {
-			if m[2] == "" {
-				set[m[1]] = true
+		refs, err := secrets.ParseReferences(v)
+		if err != nil {
+			continue
+		}
+		for _, ref := range refs {
+			if ref.Default == nil {
+				set[ref.Name] = true
 			}
 		}
 	}
@@ -125,9 +129,8 @@ func ValidateMCP(d MCPDefinition, source string) []Problem {
 		}
 	}
 	for field, value := range d.fields() {
-		matches := reference.FindAllStringIndex(value, -1)
-		remaining := reference.ReplaceAllString(value, "")
-		if strings.Contains(remaining, "${") {
+		matches, err := secrets.ParseReferences(value)
+		if err != nil {
 			add(field, "malformed variable reference", "use ${VAR} or ${VAR:-default}")
 		}
 		if strings.HasPrefix(field, "env.") || strings.HasPrefix(field, "headers.") {
@@ -147,7 +150,18 @@ func ValidateMCP(d MCPDefinition, source string) []Problem {
 var tokenPattern = regexp.MustCompile(`[A-Za-z0-9_+/=.-]+`)
 
 func suspicious(value string) bool {
-	clean := reference.ReplaceAllString(value, "")
+	clean := value
+	refs, err := secrets.ParseReferences(value)
+	if err == nil {
+		var b strings.Builder
+		start := 0
+		for _, ref := range refs {
+			b.WriteString(value[start:ref.Start])
+			start = ref.End
+		}
+		b.WriteString(value[start:])
+		clean = b.String()
+	}
 	if strings.Contains(clean, "ghp_") || strings.Contains(clean, "sk-") || strings.Contains(clean, "xox") {
 		return true
 	}

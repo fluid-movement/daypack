@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -243,5 +244,71 @@ func TestProductionEditorPassesLiteralPath(t *testing.T) {
 	}
 	if out.String() != path {
 		t.Fatalf("path was not passed literally: %q", out.String())
+	}
+}
+
+func TestLibraryDoctorSecretsModes(t *testing.T) {
+	for _, kind := range []string{"absent", "0600", "0640", "0644", "symlink", "directory", "tracked"} {
+		for _, output := range []string{"text", "--json", "--quiet"} {
+			t.Run(kind+"/"+output, func(t *testing.T) {
+				root := libraryEnvironment(t)
+				file := filepath.Join(root, "secrets.env")
+				switch kind {
+				case "symlink":
+					if err := os.Symlink(filepath.Join(root, "missing"), file); err != nil {
+						t.Fatal(err)
+					}
+				case "directory":
+					if err := os.Mkdir(file, 0700); err != nil {
+						t.Fatal(err)
+					}
+				case "absent":
+				default:
+					if err := os.WriteFile(file, []byte("TOKEN=CLI_SECRET_SENTINEL\n"), 0600); err != nil {
+						t.Fatal(err)
+					}
+					mode := os.FileMode(0600)
+					if kind == "0640" {
+						mode = 0640
+					}
+					if kind == "0644" {
+						mode = 0644
+					}
+					if err := os.Chmod(file, mode); err != nil {
+						t.Fatal(err)
+					}
+					if kind == "tracked" {
+						for _, args := range [][]string{{"init", "--quiet"}, {"add", "--force", "--", "secrets.env"}} {
+							if err := exec.Command("git", append([]string{"-C", root}, args...)...).Run(); err != nil {
+								t.Fatal(err)
+							}
+						}
+					}
+				}
+				args := []string{"doctor"}
+				if output != "text" {
+					args = append(args, output)
+				}
+				code, out, stderr := libraryInvoke(t, root, args...)
+				want := Success
+				if kind == "symlink" || kind == "directory" || kind == "tracked" {
+					want = Error
+				}
+				if code != want {
+					t.Fatalf("unexpected exit %d", code)
+				}
+				if strings.Contains(out+stderr, "CLI_SECRET_SENTINEL") {
+					t.Fatal("secret exposed")
+				}
+				if kind == "0640" || kind == "0644" {
+					if !strings.Contains(out+stderr, "chmod 600") {
+						t.Fatal("missing permission hint")
+					}
+				}
+				if output == "--json" {
+					object(t, out, code, "daypack library doctor")
+				}
+			})
+		}
 	}
 }

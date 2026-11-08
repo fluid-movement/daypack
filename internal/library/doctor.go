@@ -26,16 +26,33 @@ func Doctor(path string) ([]Problem, error) {
 		return nil, err
 	}
 	problems := l.Validate()
-	file := filepath.Join(l.root, "secrets.env")
+	metadata, err := secretsMetadata(l.root)
+	if err != nil {
+		return nil, err
+	}
+	problems = append(problems, metadata...)
+	hygiene, err := secretsHygiene(l.root)
+	if err != nil {
+		return nil, err
+	}
+	problems = append(problems, hygiene...)
+	sortProblems(problems)
+	return problems, nil
+}
+
+// secretsHygiene inspects only Git policy, without reading secret contents.
+func secretsHygiene(root string) ([]Problem, error) {
+	problems := []Problem{}
+	file := filepath.Join(root, "secrets.env")
 	add := func(message string) {
 		problems = append(problems, problem(file, "git", message, "Ignore /secrets.env and keep it untracked."))
 	}
-	status, err := gitStatus(l.root, "rev-parse", "--is-inside-work-tree")
+	status, err := gitStatus(root, "rev-parse", "--is-inside-work-tree")
 	if err != nil {
-		return nil, fmt.Errorf("inspect Git hygiene in %s: %w", l.root, err)
+		return nil, fmt.Errorf("inspect Git hygiene in %s: %w", root, err)
 	}
 	if status == 0 {
-		tracked, e := gitStatus(l.root, "ls-files", "--error-unmatch", "--", "secrets.env")
+		tracked, e := gitStatus(root, "ls-files", "--error-unmatch", "--", "secrets.env")
 		if e != nil {
 			return nil, e
 		}
@@ -46,7 +63,7 @@ func Doctor(path string) ([]Problem, error) {
 		default:
 			add("could not inspect tracked secrets.env with git")
 		}
-		ignored, e := gitStatus(l.root, "check-ignore", "--no-index", "--", "secrets.env")
+		ignored, e := gitStatus(root, "check-ignore", "--no-index", "--", "secrets.env")
 		if e != nil {
 			return nil, e
 		}
@@ -60,7 +77,7 @@ func Doctor(path string) ([]Problem, error) {
 	} else {
 		// A .git marker in an ancestor means a failing repository, not a clean
 		// non-Git library (including linked worktrees with .git files).
-		for p := l.root; ; p = filepath.Dir(p) {
+		for p := root; ; p = filepath.Dir(p) {
 			if _, e := os.Lstat(filepath.Join(p, ".git")); e == nil {
 				add("could not inspect library Git repository")
 				sortProblems(problems)
@@ -72,7 +89,7 @@ func Doctor(path string) ([]Problem, error) {
 				break
 			}
 		}
-		data, e := os.ReadFile(filepath.Join(l.root, ".gitignore"))
+		data, e := os.ReadFile(filepath.Join(root, ".gitignore"))
 		if e != nil && !os.IsNotExist(e) {
 			return nil, e
 		}

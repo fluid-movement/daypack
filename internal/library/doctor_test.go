@@ -1,6 +1,8 @@
 package library
 
 import (
+	"fmt"
+	"golang.org/x/sys/unix"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -124,5 +126,76 @@ func TestDoctorInvalidNativeAndGitFailure(t *testing.T) {
 	problems, err = Doctor(root)
 	if err != nil || !doctorHasProblem(problems, Error, "repository") {
 		t.Fatalf("%v %v", problems, err)
+	}
+}
+
+func TestDoctorSecretsMetadata(t *testing.T) {
+	for _, kind := range []string{"absent", "private", "unreadable", "0640", "0644", "symlink", "directory", "fifo"} {
+		t.Run(kind, func(t *testing.T) {
+			root := mutationRoot(t)
+			isolatedGit(t)
+			file := filepath.Join(root, "secrets.env")
+			switch kind {
+			case "symlink":
+				if err := os.Symlink(filepath.Join(root, "nonexistent"), file); err != nil {
+					t.Fatal(err)
+				}
+			case "directory":
+				if err := os.Mkdir(file, 0700); err != nil {
+					t.Fatal(err)
+				}
+			case "fifo":
+				if err := unix.Mkfifo(file, 0600); err != nil {
+					t.Fatal(err)
+				}
+			case "absent":
+			default:
+				// Invalid file syntax proves doctor does not attempt content validation.
+				writeNative(t, file, []byte("DOCTOR_METADATA_SENTINEL='unterminated\n"))
+				mode := os.FileMode(0600)
+				if kind == "0640" {
+					mode = 0640
+				}
+				if kind == "0644" {
+					mode = 0644
+				}
+				if kind == "unreadable" {
+					mode = 0000
+				}
+				if err := os.Chmod(file, mode); err != nil {
+					t.Fatal(err)
+				}
+			}
+			before, statErr := os.Lstat(file)
+			p, err := Doctor(root)
+			if err != nil {
+				t.Fatal(err)
+			}
+			expected := 0
+			if kind == "0640" || kind == "0644" {
+				expected = 1
+				if len(p) == 1 && (p[0].Severity != Warning || p[0].Field != "permissions" || !strings.Contains(p[0].Hint, "chmod 600")) {
+					t.Fatal("incorrect permissions warning")
+				}
+			}
+			if kind == "symlink" || kind == "directory" || kind == "fifo" {
+				expected = 1
+				if len(p) == 1 && p[0].Severity != Error {
+					t.Fatal("missing file-type error")
+				}
+			}
+			if len(p) != expected {
+				t.Fatalf("unexpected diagnostics: %v", p)
+			}
+			if strings.Contains(fmt.Sprint(p), "DOCTOR_METADATA_SENTINEL") {
+				t.Fatal("content exposed")
+			}
+			if statErr == nil {
+				after, err := os.Lstat(file)
+				if err != nil || before.Mode() != after.Mode() || before.Size() != after.Size() || !before.ModTime().Equal(after.ModTime()) {
+					t.Fatal("doctor changed secrets metadata")
+				}
+			}
+		})
 	}
 }

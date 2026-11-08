@@ -102,3 +102,38 @@ func TestInlineMCPParity(t *testing.T) {
 		})
 	}
 }
+
+func TestInlineSharedValidation(t *testing.T) {
+	for _, value := range []string{"${TOKEN}", "Bearer ${TOKEN:-nonsecret}", "${ONE:-}-${TWO}", "${TOKEN:-${NESTED}}", "${TOKEN:-private{bad}}", "private-literal"} {
+		definition := library.MCPDefinition{Type: "http", URL: "https://example.test/${HOST:-local}", Headers: map[string]string{"Authorization": value}}
+		m := &Manifest{Version: 1, Harnesses: []string{"claude-code"}, InlineMCP: []Entry{{Type: library.MCP, Name: "local", Inline: &definition}}}
+		before := m.Entries()
+		expected := library.ValidateMCP(definition, "")
+		for i := range expected {
+			expected[i].Field = "inline.mcp.local." + expected[i].Field
+		}
+		for _, env := range []string{"one", "two"} {
+			t.Setenv("TOKEN", env)
+			actual := m.Validate(nil)
+			if !reflect.DeepEqual(actual, expected) || !reflect.DeepEqual(actual, m.Validate(nil)) {
+				t.Fatal("inline and library validation differ")
+			}
+			if !reflect.DeepEqual(before, m.Entries()) {
+				t.Fatal("validation mutated definition")
+			}
+		}
+	}
+	// Parse-only errors must survive additional validation without duplication.
+	m := loadText(t, header+"[inline.mcp.local]\ntype='stdio'\ncommand=7\nextra='private-literal'\nenv={TOKEN='${TOKEN:-${NESTED}}'}")
+	p := m.Validate(nil)
+	seen := map[Problem]bool{}
+	for _, problem := range p {
+		if seen[problem] {
+			t.Fatal("duplicate inline diagnostic")
+		}
+		seen[problem] = true
+	}
+	if !reflect.DeepEqual(p, m.Validate(nil)) {
+		t.Fatal("repeated validation changed diagnostics")
+	}
+}

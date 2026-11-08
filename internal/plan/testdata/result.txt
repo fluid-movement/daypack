@@ -1,0 +1,19 @@
+unresolved:
+  x unresolved skill:missing [skipped; safe final reason]
+pi:
+  x unsupported agent:reviewer [applied; safe final reason]
+agents-md:
+  ? drift fragment:other AGENTS.md section="daypack:other" [failed; safe final reason]
+  ! conflict fragment:style AGENTS.md section="daypack:style" [unchanged; safe final reason]
+agents-skills-dir:
+  + create skill:svelte .agents/skills/svelte -> /library/skills/svelte [unchanged; safe final reason]
+claude-agents-dir:
+  - remove agent:reviewer .claude/agents/reviewer.md [applied; safe final reason]
+claude-mcp-approval:
+  ~ adopt mcp:docs .claude/settings.local.json key="enabledMcpjsonServers" member="docs" [skipped; gated; safe final reason]
+claude-mcp-json:
+  ~ update mcp:docs .mcp.json key="mcpServers.docs" mcp[stdio] "npx" "--token" "${DAYPACK_TEST_SECRET}" "two words" "" variables=[DAYPACK_TEST_SECRET] [failed; gated; safe final reason]
+note claude info: Shared target appears once
+note pi trust: Review project trust
+Summary: + 1 ~ 2 - 1 ! 1 ? 1 x 2
+Outcomes: planned 0 applied 2 skipped 2 failed 2 unchanged 2

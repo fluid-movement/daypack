@@ -1,0 +1,19 @@
+{
+  "notes": [],
+  "operations": [],
+  "outcomes": {
+    "applied": 0,
+    "failed": 0,
+    "planned": 0,
+    "skipped": 0,
+    "unchanged": 0
+  },
+  "summary": {
+    "conflict": 0,
+    "create": 0,
+    "drift": 0,
+    "remove": 0,
+    "unresolved": 0,
+    "update": 0
+  }
+}

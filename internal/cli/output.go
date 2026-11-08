@@ -2,11 +2,14 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
 
+	"github.com/fluid-movement/daypack/internal/adapters/contract"
 	"github.com/fluid-movement/daypack/internal/library"
+	"github.com/fluid-movement/daypack/internal/plan"
 )
 
 const (
@@ -19,6 +22,10 @@ const (
 // Result is a command's typed outcome. Attention means valid input needs action.
 // Payload values must be JSON encodable and must not contain secrets.
 type Result struct {
+	Summary    *plan.Summary    `json:"summary,omitempty"`
+	Outcomes   map[string]int   `json:"outcomes,omitempty"`
+	Notes      *[]contract.Note `json:"notes,omitempty"`
+	plan       *plan.Plan
 	Code       int    `json:"-"`
 	Items      any    `json:"items,omitempty"`
 	Operations any    `json:"operations,omitempty"`
@@ -63,8 +70,20 @@ func render(w io.Writer, options Options, command string, result Result) error {
 		if err != nil {
 			return err
 		}
-		_, err = w.Write(append(data, '\n'))
+		n, err := w.Write(append(data, '\n'))
+		if err == nil && n != len(data)+1 {
+			err = io.ErrShortWrite
+		}
+		if err != nil && result.plan != nil {
+			return errors.New("could not write plan result")
+		}
 		return err
+	}
+	if result.plan != nil && !options.Quiet {
+		if err := plan.RenderText(w, *result.plan); err != nil {
+			return errors.New("could not write plan result")
+		}
+		return nil
 	}
 	if result.Help != "" {
 		_, err := io.WriteString(w, result.Help)

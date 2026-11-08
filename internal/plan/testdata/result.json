@@ -1,0 +1,134 @@
+{
+  "notes": [
+    {
+      "Code": "info",
+      "Harness": "claude",
+      "Message": "Shared target appears once"
+    },
+    {
+      "Code": "trust",
+      "Harness": "pi",
+      "Message": "Review project trust"
+    }
+  ],
+  "operations": [
+    {
+      "action": "unresolved",
+      "entry": "skill:missing",
+      "gated": false,
+      "marker": "x",
+      "outcome": "skipped",
+      "reason": "safe final reason"
+    },
+    {
+      "action": "unsupported",
+      "entry": "agent:reviewer",
+      "gated": false,
+      "harness": "pi",
+      "marker": "x",
+      "outcome": "applied",
+      "reason": "safe final reason"
+    },
+    {
+      "action": "drift",
+      "entry": "fragment:other",
+      "gated": false,
+      "kind": "md-section",
+      "marker": "?",
+      "outcome": "failed",
+      "path": "AGENTS.md",
+      "reason": "safe final reason",
+      "section": "daypack:other",
+      "target": "agents-md"
+    },
+    {
+      "action": "conflict",
+      "entry": "fragment:style",
+      "gated": false,
+      "kind": "md-section",
+      "marker": "!",
+      "outcome": "unchanged",
+      "path": "AGENTS.md",
+      "reason": "safe final reason",
+      "section": "daypack:style",
+      "target": "agents-md"
+    },
+    {
+      "action": "create",
+      "entry": "skill:svelte",
+      "gated": false,
+      "kind": "symlink",
+      "link": "/library/skills/svelte",
+      "marker": "+",
+      "outcome": "unchanged",
+      "path": ".agents/skills/svelte",
+      "reason": "safe final reason",
+      "target": "agents-skills-dir"
+    },
+    {
+      "action": "remove",
+      "entry": "agent:reviewer",
+      "gated": false,
+      "kind": "file",
+      "marker": "-",
+      "outcome": "applied",
+      "path": ".claude/agents/reviewer.md",
+      "reason": "safe final reason",
+      "target": "claude-agents-dir"
+    },
+    {
+      "action": "adopt",
+      "entry": "mcp:docs",
+      "gated": true,
+      "key": "enabledMcpjsonServers",
+      "kind": "json-array-element",
+      "marker": "~",
+      "member": "docs",
+      "outcome": "skipped",
+      "path": ".claude/settings.local.json",
+      "reason": "safe final reason",
+      "target": "claude-mcp-approval"
+    },
+    {
+      "action": "update",
+      "entry": "mcp:docs",
+      "gated": true,
+      "key": "mcpServers.docs",
+      "kind": "json-entry",
+      "marker": "~",
+      "mcp": {
+        "args": [
+          "--token",
+          "${DAYPACK_TEST_SECRET}",
+          "two words",
+          ""
+        ],
+        "command": "npx",
+        "required_variables": [
+          "DAYPACK_TEST_SECRET"
+        ],
+        "type": "stdio",
+        "url": ""
+      },
+      "outcome": "failed",
+      "path": ".mcp.json",
+      "reason": "safe final reason",
+      "target": "claude-mcp-json"
+    }
+  ],
+  "outcomes": {
+    "applied": 2,
+    "failed": 2,
+    "planned": 0,
+    "skipped": 2,
+    "unchanged": 2
+  },
+  "summary": {
+    "conflict": 1,
+    "create": 1,
+    "drift": 1,
+    "remove": 1,
+    "unresolved": 2,
+    "update": 2
+  }
+}

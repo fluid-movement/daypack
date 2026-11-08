@@ -66,6 +66,16 @@ func fixtureEntries(t *testing.T, f testutil.Fixture, root string) ([]contract.E
 	}
 	return entries, contract.Project{Root: root, Harnesses: m.Harnesses}
 }
+func piNotes(notes []contract.Note) []contract.Note {
+	var out []contract.Note
+	for _, n := range notes {
+		if n.Harness == "pi" {
+			out = append(out, n)
+		}
+	}
+	return out
+}
+
 func productionRegistry(t *testing.T) *adapters.Registry {
 	t.Helper()
 	r, err := adapters.DefaultRegistry()
@@ -81,8 +91,8 @@ func TestMCPFixturePipeline(t *testing.T) {
 		items, unsupported         int
 	}{
 		{"pi", `["pi"]`, `["docs", "remote"]`, 4, 0},
-		{"both", `["claude-code", "pi"]`, `["docs", "remote"]`, 4, 4},
-		{"restricted", `["claude-code", "pi"]`, `[{name="docs",harnesses=["claude-code"]}, {name="remote",harnesses=["pi"]}]`, 3, 3},
+		{"both", `["claude-code", "pi"]`, `["docs", "remote"]`, 12, 0},
+		{"restricted", `["claude-code", "pi"]`, `[{name="docs",harnesses=["claude-code"]}, {name="remote",harnesses=["pi"]}]`, 9, 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			f := testutil.NewFixture(t, false)
@@ -108,7 +118,7 @@ headers={Authorization='Bearer ${DAYPACK_TEST_SECRET}'}
 			if err != nil || len(result.Items) != tc.items || len(result.Unsupported) != tc.unsupported {
 				t.Fatalf("pipeline counts: %d items, %d unsupported, error %v", len(result.Items), len(result.Unsupported), err)
 			}
-			if len(result.Notes) != 1 || result.Notes[0].Code != "project-trust-required" {
+			if pn := piNotes(result.Notes); len(pn) != 1 || pn[0].Code != "project-trust-required" {
 				t.Fatal("missing trust requirement")
 			}
 			output, err := json.Marshal(result)
@@ -116,6 +126,9 @@ headers={Authorization='Bearer ${DAYPACK_TEST_SECRET}'}
 				t.Fatal(err)
 			}
 			for _, item := range result.Items {
+				if item.Kind == contract.JSONArrayElement {
+					continue // Claude approval membership holds only the server name
+				}
 				if !bytes.Contains(item.Value, []byte("${DAYPACK_TEST_SECRET}")) {
 					t.Fatal("reference lost")
 				}
@@ -142,8 +155,8 @@ func TestMCPMixedCapabilitiesAndPlan(t *testing.T) {
 	libBefore := testutil.SnapshotTree(t, f.Library)
 	r := productionRegistry(t)
 	result, err := r.Desired(entries, contract.Project{Root: f.Project, Harnesses: []string{"pi", "claude-code"}})
-	if err != nil || len(result.Items) != 2 {
-		t.Fatal("other entries did not survive")
+	if err != nil || len(result.Items) != 6 {
+		t.Fatalf("other entries did not survive: %d items, err %v", len(result.Items), err)
 	}
 	var diagnostic contract.Unsupported
 	for _, u := range result.Unsupported {
@@ -170,7 +183,7 @@ func TestMCPMixedCapabilitiesAndPlan(t *testing.T) {
 	if err := json.Unmarshal(encoded.Bytes(), &report); err != nil {
 		t.Fatal(err)
 	}
-	if report.Summary.Unresolved != 1 || len(report.Notes) != 1 || report.Operations[0].Glyph != "x" {
+	if report.Summary.Unresolved != 1 || len(report.Notes) != 2 || report.Operations[0].Glyph != "x" {
 		t.Fatal("JSON projection lost diagnostic")
 	}
 	data, err := json.Marshal(result)
@@ -197,15 +210,15 @@ func TestPiProjectTrustNote(t *testing.T) {
 		names []string
 		count int
 	}{
-		{nil, 0}, {[]string{"claude-code"}, 0}, {[]string{"pi"}, 1}, {[]string{"pi", "pi", "claude-code"}, 1},
+		{nil, 0}, {[]string{"claude-code"}, 1}, {[]string{"pi"}, 1}, {[]string{"pi", "pi", "claude-code"}, 2},
 	} {
 		result, err := r.Desired(nil, contract.Project{Harnesses: tc.names})
 		if err != nil || len(result.Notes) != tc.count {
 			t.Fatal("incorrect selected-project notes")
 		}
-		if tc.count == 1 {
+		if len(piNotes(result.Notes)) == 1 {
 			expected := []contract.Note{{Harness: "pi", Code: "project-trust-required", Message: "Pi loads project .agents/skills and .pi/mcp.json only after project trust is granted (/trust); untrusted project config may be silently skipped in non-interactive (headless) mode."}}
-			if !reflect.DeepEqual(result.Notes, expected) {
+			if !reflect.DeepEqual(piNotes(result.Notes), expected) {
 				t.Fatal("trust note changed")
 			}
 		}

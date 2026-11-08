@@ -2,6 +2,8 @@
 package claudecode
 
 import (
+	"slices"
+
 	"github.com/fluid-movement/daypack/internal/adapters/contract"
 	"github.com/fluid-movement/daypack/internal/adapters/skilldir"
 	"github.com/fluid-movement/daypack/internal/library"
@@ -41,4 +43,12 @@ func (a *Adapter) Desired(e contract.Entry, _ contract.Project) ([]contract.Item
 	return skilldir.Desired(e, a.Targets()[0])
 }
 
-func (*Adapter) Notes(contract.Project) []contract.Note { return nil }
+func (*Adapter) Notes(p contract.Project) []contract.Note {
+	if !slices.Contains(p.Harnesses, "claude-code") {
+		return nil
+	}
+	return []contract.Note{{Harness: "claude-code", Code: "mcp-approval", Message: mcpApprovalMessage}}
+}
+
+// Static advisory: the adapter cannot observe Claude Code's approval state.
+const mcpApprovalMessage = "Claude Code may require approving project MCP servers on first use; approve them via /mcp (or list them in enabledMcpjsonServers in .claude/settings.local.json)."

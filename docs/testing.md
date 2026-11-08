@@ -73,6 +73,28 @@ exclusion. These are offline composition tests, not production apply/status CLI
 coverage. Live Claude approval in a never-trusted folder and settings lookup in a
 worktree remain separate manual checks requiring user approval.
 
+### Claude Code MCP approval: UNVERIFIED
+
+Whether Claude Code honours `enabledMcpjsonServers` from an untracked
+`.claude/settings.local.json` in a never-trusted folder, and which
+`settings.local.json` it reads inside a git worktree, has NOT been verified. The
+adapter therefore always emits a static `mcp-approval` Note telling the user
+that project MCP servers may need approval via `/mcp` (or
+`enabledMcpjsonServers`) on first use. To verify later (requires user OK for a
+live session):
+
+1. Create a fresh folder outside any trusted path, `git init` it, and apply a
+   manifest with one innocuous local MCP server so `.mcp.json` and
+   `.claude/settings.local.json` are written.
+2. Start `claude` in that folder. Record the Claude version, config paths and
+   trust state. Observe whether the server is connected without an approval
+   prompt or `/mcp` shows it pending.
+3. From that repository run `git worktree add ../wt`, apply in the worktree (its
+   own `.mcp.json` and `settings.local.json`), start `claude` there, and record
+   whether approval is honoured and which settings file was read.
+4. Log the observations in the issue; if approval is not honoured keep the Note
+   (and let status print the `/mcp` hint), otherwise reconsider it.
+
 ## Verification
 
 Run `go build ./...`, `go vet ./...`, `go test ./...`,

@@ -94,8 +94,8 @@ func TestAgentItems(t *testing.T) {
 			t.Fatalf("unsupported: %v %v", items, err)
 		}
 	}
-	if len(a.Notes(p)) != 0 {
-		t.Fatal("unexpected notes")
+	if len(a.Notes(p)) != 1 {
+		t.Fatal("expected one note")
 	}
 }
 

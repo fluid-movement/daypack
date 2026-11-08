@@ -156,7 +156,7 @@ func TestMixedSkillsAgentsMCP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(r.Names(), []string{"claude-code"}) {
+	if !reflect.DeepEqual(r.Names(), []string{"claude-code", "pi"}) {
 		t.Fatal("duplicate registration")
 	}
 	entries := []contract.Entry{skill("testing"), {Ref: "agent:reviewer", Artifact: library.Artifact{Type: library.Agent, Name: "reviewer"}, Content: []byte("native")}, mcp("docs", library.MCPDefinition{Type: "stdio", Command: "echo"})}
@@ -177,5 +177,17 @@ func TestMCPEmptyOptionsOmitted(t *testing.T) {
 		if !reflect.DeepEqual(withEmpty, without) {
 			t.Fatal("empty options rendered inconsistently")
 		}
+	}
+}
+
+func TestNotesMCPApprovalAdvisory(t *testing.T) {
+	a := claudecode.New()
+	notes := a.Notes(contract.Project{Harnesses: []string{"claude-code"}})
+	if len(notes) != 1 || notes[0].Harness != "claude-code" || notes[0].Code != "mcp-approval" ||
+		!strings.Contains(notes[0].Message, "/mcp") || !strings.Contains(notes[0].Message, "enabledMcpjsonServers") {
+		t.Fatalf("notes: %#v", notes)
+	}
+	if got := a.Notes(contract.Project{Harnesses: []string{"pi"}}); len(got) != 0 {
+		t.Fatalf("unselected harness: %#v", got)
 	}
 }

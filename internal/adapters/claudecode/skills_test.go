@@ -47,7 +47,7 @@ func TestPureRenderer(t *testing.T) {
 		{ID: contract.ClaudeMCPJSON, Root: ".mcp.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
 		{ID: contract.ClaudeMCPApproval, Root: ".claude/settings.local.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
 	}
-	if !reflect.DeepEqual(targets, expected) || a.Name() != "claude-code" || len(a.Notes(p)) != 0 {
+	if !reflect.DeepEqual(targets, expected) || a.Name() != "claude-code" || len(a.Notes(p)) != 1 {
 		t.Fatal("declarations")
 	}
 	targets[0].Types[0] = library.MCP

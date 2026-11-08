@@ -29,3 +29,5 @@
 * [Fragment sections reconcile per file; bridge uses reserved ref](/decisions/01M6X69C4D8TW7ME9EYKQMSK1K.md) - Ordered ReconcileSections in lock; CLAUDE.md bridge via ProjectAdapter with ref fragment:@agents-md
 * [Generate library-local instructions from the binary](/decisions/01M6XFYKA3P7XRNF3BGTJZG2CZ.md) - Library init and doctor --fix maintain a marked AGENTS.md at the selected library root while preserving user records and notes.
 * [Library secrets use .env with a generated empty example](/decisions/01M6XFZ9Q1ZANXHCE7AM1Y9TGK.md) - Use .env as the canonical private library file and generate .env.example from MCP references; retain legacy secrets.env read fallback. The user chose the established .env convention and wants an example showing which tokens to add.
+* [Library agent docs: AGENTS.md only, no skills](/decisions/01M6XGVCRZG1BG6E094NW1NKW0.md) - Library folder gets a generated AGENTS.md; no per-harness skills.
+* [Library secrets file is .env with .env.example](/decisions/01M6XGVCW95SEEMAZTKT8V68VM.md) - Rename secrets.env to .env and generate .env.example.

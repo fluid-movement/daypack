@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/fluid-movement/daypack/internal/adapters/claudecode"
 	"github.com/fluid-movement/daypack/internal/adapters/contract"
 	"github.com/fluid-movement/daypack/internal/library"
 )
@@ -17,9 +18,8 @@ type Registry struct {
 	declared map[string]map[string]contract.Target
 }
 
-// DefaultRegistry is the single production registration list. Concrete feature
-// packages will add their adapter constructor here when implemented.
-func DefaultRegistry() (*Registry, error) { return NewRegistry() }
+// DefaultRegistry is the single production registration list.
+func DefaultRegistry() (*Registry, error) { return NewRegistry(claudecode.New()) }
 
 func NewRegistry(adapters ...contract.Adapter) (*Registry, error) {
 	r := &Registry{adapters: map[string]contract.Adapter{}, targets: map[string]contract.Target{}, declared: map[string]map[string]contract.Target{}}

@@ -1,0 +1,4 @@
+[
+ {"Target":"claude-skills-dir","Entry":"skill:testing","Kind":"symlink","Path":".claude/skills/testing","Link":"<ROOT0>/skills/testing","Key":"","Marker":"","Bytes":null,"Value":null},
+ {"Target":"claude-skills-dir","Entry":"skill:another","Kind":"symlink","Path":".claude/skills/another","Link":"<ROOT0>/skills/another","Key":"","Marker":"","Bytes":null,"Value":null}
+]

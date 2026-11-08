@@ -30,6 +30,8 @@ type Reconciliation struct {
 	blocked  map[string]bool
 	history  map[string]string
 	owned    *lock.Lock
+	desired  *lock.Lock
+	project  contract.Project
 	initial  []lock.Item
 	report   plan.Plan
 	work     []work

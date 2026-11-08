@@ -76,6 +76,7 @@ func Build(ctx context.Context, root string, m *manifest.Manifest, lib *library.
 		a, _ := registry.Lookup(h)
 		r.report.Notes = append(r.report.Notes, a.Notes(project)...)
 	}
+	r.project = contract.Project{Root: root, Harnesses: slices.Clone(project.Harnesses)}
 	var entries []contract.Entry
 	for _, e := range m.Entries() {
 		if err := ctx.Err(); err != nil {
@@ -127,6 +128,7 @@ func Build(ctx context.Context, root string, m *manifest.Manifest, lib *library.
 		r.blocked[u.Entry] = true
 	}
 	desired := lock.New()
+	r.desired = desired
 	for _, item := range result.Items {
 		candidate, err := r.candidate(item)
 		if err != nil {

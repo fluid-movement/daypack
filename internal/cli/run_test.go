@@ -60,8 +60,8 @@ func TestOutcomes(t *testing.T) {
 		err           error
 		code          int
 	}{
-		{name: "success", command: "status", result: Result{Items: []string{"clean"}}, code: Success},
-		{name: "pending status", command: "status", result: Result{Code: Attention, Operations: []string{"update"}}, code: Attention},
+		{name: "success", command: "probe", result: Result{Items: []string{"clean"}}, code: Success},
+		{name: "pending status", command: "probe", result: Result{Code: Attention, Operations: []string{"update"}}, code: Attention},
 		{name: "gated apply", command: "apply", result: Result{Code: Attention, Problems: []string{"gated entry skipped"}}, code: Attention},
 		{name: "invalid manifest", command: "apply", err: errors.New("invalid manifest"), code: Error},
 		{name: "doctor validation", command: "library doctor", err: &Failure{Code: Error, Cause: errors.New("invalid library\nentry"), Hint: "Repair the entry.\nRetry."}, code: Error},
@@ -242,12 +242,12 @@ func TestDefaultNonFileInputAndHumanOutput(t *testing.T) {
 	environment(t)
 	for _, quiet := range []bool{false, true} {
 		var out, stderr bytes.Buffer
-		args := []string{"status", "--no-color"}
+		args := []string{"probe", "--no-color"}
 		if quiet {
 			args = append(args, "--quiet")
 		}
 		code := run(context.Background(), args, IO{In: strings.NewReader(""), Out: &out, Err: &stderr}, func(root *cobra.Command) {
-			leaf := &cobra.Command{Use: "status", Args: cobra.NoArgs}
+			leaf := &cobra.Command{Use: "probe", Args: cobra.NoArgs}
 			SetHandler(leaf, func(_ context.Context, opts Options, _ []string) (Result, error) {
 				if opts.Interactive {
 					t.Fatal("non-file reader treated as TTY")
@@ -269,8 +269,8 @@ func TestDefaultNonFileInputAndHumanOutput(t *testing.T) {
 func TestNoCommandExecutionOnUsageError(t *testing.T) {
 	environment(t)
 	for _, suffix := range [][]string{{"extra", "--json"}, {"--bad", "--json"}} {
-		code, out, _ := invoke(t, append([]string{"status"}, suffix...), false, func(root *cobra.Command) {
-			leaf := &cobra.Command{Use: "status", Args: cobra.NoArgs}
+		code, out, _ := invoke(t, append([]string{"probe"}, suffix...), false, func(root *cobra.Command) {
+			leaf := &cobra.Command{Use: "probe", Args: cobra.NoArgs}
 			SetHandler(leaf, func(context.Context, Options, []string) (Result, error) {
 				t.Fatal("handler ran on usage error")
 				return Result{}, nil
@@ -280,7 +280,7 @@ func TestNoCommandExecutionOnUsageError(t *testing.T) {
 		if code != Usage {
 			t.Fatalf("got %d", code)
 		}
-		object(t, out, code, "daypack status")
+		object(t, out, code, "daypack probe")
 	}
 }
 

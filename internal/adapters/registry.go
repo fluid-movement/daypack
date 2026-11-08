@@ -88,3 +88,15 @@ func (r *Registry) Targets() []contract.Target {
 	sort.Slice(out, func(i, j int) bool { return strings.Compare(out[i].ID, out[j].ID) < 0 })
 	return out
 }
+
+// Declared returns independent copies of the targets a registered adapter
+// declares, or nil when the adapter is unknown.
+func (r *Registry) Declared(name string) []contract.Target {
+	out := make([]contract.Target, 0, len(r.declared[name]))
+	for _, t := range r.declared[name] {
+		t.Types = slices.Clone(t.Types)
+		out = append(out, t)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
+	return out
+}

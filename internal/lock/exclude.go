@@ -2,6 +2,7 @@ package lock
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -180,4 +181,65 @@ func updateExclude(root, block string) error {
 		return e
 	}
 	return writeAtomic(p, out, 0644)
+}
+
+// ErrExcludeBlock marks a malformed Git exclude file for this project.
+var ErrExcludeBlock = errors.New("malformed exclude block")
+
+// InRepository reports whether root is inside a Git work tree.
+func InRepository(root string) (bool, error) { return inGit(root) }
+
+// MissingExclusions reads, without writing, the exclude block for root and
+// returns the sorted required paths whose exact escaped rule is absent. A
+// missing block reports every required path. Outside Git it returns nil.
+func MissingExclusions(root string, items []Item) ([]string, error) {
+	want, e := ExcludeBlock(root, items)
+	if e != nil {
+		return nil, e
+	}
+	r, e := absoluteRoot(root)
+	if e != nil {
+		return nil, e
+	}
+	p, e := excludePath(root)
+	if e != nil || p == "" {
+		return nil, e
+	}
+	data, e := os.ReadFile(p)
+	if e != nil && !os.IsNotExist(e) {
+		return nil, e
+	}
+	spans, e := excludeSpans(data)
+	if e != nil {
+		return nil, fmt.Errorf("%w: %v", ErrExcludeBlock, e)
+	}
+	have := map[string]bool{}
+	for _, s := range spans {
+		if s.root == r {
+			for _, line := range strings.Split(string(data[s.start:s.end]), "\n") {
+				have[line] = true
+			}
+		}
+	}
+	missing := []string{}
+	for _, line := range strings.Split(want, "\n") {
+		if strings.HasPrefix(line, "/") && !have[line] {
+			missing = append(missing, unescapeIgnore(strings.TrimPrefix(line, "/")))
+		}
+	}
+	sort.Strings(missing)
+	return missing, nil
+}
+func unescapeIgnore(s string) string {
+	var b strings.Builder
+	escaped := false
+	for _, r := range s {
+		if r == '\\' && !escaped {
+			escaped = true
+			continue
+		}
+		escaped = false
+		b.WriteRune(r)
+	}
+	return b.String()
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/fluid-movement/daypack/internal/library"
 	"github.com/fluid-movement/daypack/internal/manifest"
 	"github.com/fluid-movement/daypack/internal/plan"
+	"github.com/fluid-movement/daypack/internal/status"
 )
 
 const (
@@ -28,12 +29,13 @@ type Result struct {
 	Outcomes   map[string]int   `json:"outcomes,omitempty"`
 	Notes      *[]contract.Note `json:"notes,omitempty"`
 	plan       *plan.Plan
-	Code       int    `json:"-"`
-	Items      any    `json:"items,omitempty"`
-	Operations any    `json:"operations,omitempty"`
-	Problems   any    `json:"problems,omitempty"`
-	Help       string `json:"help,omitempty"`
-	Message    string `json:"-"`
+	Status     *status.Report `json:"status,omitempty"`
+	Code       int            `json:"-"`
+	Items      any            `json:"items,omitempty"`
+	Operations any            `json:"operations,omitempty"`
+	Problems   any            `json:"problems,omitempty"`
+	Help       string         `json:"help,omitempty"`
+	Message    string         `json:"-"`
 }
 
 // Failure classifies an error without inspecting its text. Causes and hints must
@@ -80,6 +82,12 @@ func render(w io.Writer, options Options, command string, result Result) error {
 			return errors.New("could not write plan result")
 		}
 		return err
+	}
+	if result.Status != nil {
+		if options.Quiet {
+			return status.RenderAttention(w, *result.Status)
+		}
+		return status.RenderText(w, *result.Status)
 	}
 	if result.plan != nil && options.Quiet {
 		if items, ok := result.Items.([]importer.Item); ok {

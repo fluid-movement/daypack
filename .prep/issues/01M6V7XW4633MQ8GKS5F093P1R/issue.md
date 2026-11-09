@@ -1,7 +1,7 @@
 ---
 title: Project registry and apply --all (post-v1)
 kind: code
-parent: 01M6RSR1RXHMJNSEFMHSYVQ4E0
+parent: 01M6ZYR5JF2KKXZM3S731V5PPF
 tags:
   - post-v1
 priority: low

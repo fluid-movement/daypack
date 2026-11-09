@@ -1,6 +1,7 @@
 ---
 title: Project marker discovery and manifest suggestions (later)
 kind: code
+parent: 01M6ZYR5JF2KKXZM3S731V5PPF
 tags:
   - post-v1
 priority: low

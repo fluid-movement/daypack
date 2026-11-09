@@ -1,7 +1,7 @@
 ---
 title: OS keychain secret source (post-v1)
 kind: code
-parent: 01M6RSR1TPWPNN1MC4EJY0D4M2
+parent: 01M6ZYR5JF2KKXZM3S731V5PPF
 tags:
   - post-v1
 priority: low

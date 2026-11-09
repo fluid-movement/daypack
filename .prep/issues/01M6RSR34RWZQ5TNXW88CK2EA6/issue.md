@@ -1,7 +1,7 @@
 ---
 title: 'Claude Code: hooks merged into project settings (post-v1)'
 kind: code
-parent: 01M6RSR1WEJADFBE7H43FG9Y19
+parent: 01M6ZYR5JF2KKXZM3S731V5PPF
 tags:
   - post-v1
 priority: low

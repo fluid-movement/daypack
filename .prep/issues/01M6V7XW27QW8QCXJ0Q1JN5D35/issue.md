@@ -1,7 +1,7 @@
 ---
 title: Library rename with aliases, tombstones, and apply --fix (post-v1)
 kind: code
-parent: 01M6RSQDN4E37HX2EM8F97SADA
+parent: 01M6ZYR5JF2KKXZM3S731V5PPF
 tags:
   - post-v1
 priority: low

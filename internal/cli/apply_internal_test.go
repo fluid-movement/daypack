@@ -107,7 +107,7 @@ func TestApplyInlineConsentDispatch(t *testing.T) {
 			project, libraryDir, registry := inlineApplyFixture(t)
 			const sentinel = "DAYPACK_SYNTHETIC_SECRET_2651_DO_NOT_COPY"
 			t.Setenv("DAYPACK_TEST_SECRET", sentinel)
-			if err := os.WriteFile(filepath.Join(libraryDir, "secrets.env"), []byte("DAYPACK_TEST_SECRET="+sentinel+"\n"), 0600); err != nil {
+			if err := os.WriteFile(filepath.Join(libraryDir, ".env"), []byte("DAYPACK_TEST_SECRET="+sentinel+"\n"), 0600); err != nil {
 				t.Fatal(err)
 			}
 			var input io.Reader = unreadableInput{t}

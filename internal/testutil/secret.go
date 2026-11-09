@@ -13,7 +13,7 @@ func PlantSentinel(t *testing.T, f Fixture) string {
 	t.Helper()
 	sentinel := "DAYPACK_SYNTHETIC_SECRET_6fe28c1b_DO_NOT_COPY"
 	t.Setenv("DAYPACK_TEST_SECRET", sentinel)
-	path := filepath.Join(f.Library, "secrets.env")
+	path := filepath.Join(f.Library, ".env")
 	if err := os.WriteFile(path, []byte("DAYPACK_TEST_SECRET="+sentinel+"\n"), 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func scanSecrets(project, sentinel string, outputs ...string) ([]string, error) 
 			if final, err := filepath.EvalSymlinks(path); err == nil {
 				resolved = final
 			}
-			if bytes.Contains([]byte(target), []byte(sentinel)) || filepath.Base(filepath.Clean(target)) == "secrets.env" || filepath.Base(resolved) == "secrets.env" {
+			if bytes.Contains([]byte(target), []byte(sentinel)) || (filepath.Base(filepath.Clean(target)) == "secrets.env" || filepath.Base(filepath.Clean(target)) == ".env") || (filepath.Base(resolved) == "secrets.env" || filepath.Base(resolved) == ".env") {
 				findings = append(findings, "link: "+path)
 			}
 			return nil

@@ -32,7 +32,7 @@ func readSecretTest(t *testing.T, file string) []byte {
 func TestWriteSecretsRoundTrip(t *testing.T) {
 	root, project := mutationRoot(t), secretProject(t)
 	isolatedGit(t)
-	file := filepath.Join(root, "secrets.env")
+	file := filepath.Join(root, ".env")
 	values := map[string]string{"Z": "", "A": "spaces ' dollar$ backtick` hash# equals= slash\\ $(touch forbidden)"}
 	old := unix.Umask(0)
 	err := WriteSecrets(root, project, values)
@@ -117,7 +117,7 @@ func TestWriteSecretsRejectsBatch(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			root, project := mutationRoot(t), secretProject(t)
 			isolatedGit(t)
-			file := filepath.Join(root, "secrets.env")
+			file := filepath.Join(root, ".env")
 			writeNative(t, file, []byte(tc.existing))
 			if err := os.Chmod(file, 0600); err != nil {
 				t.Fatal(err)
@@ -138,7 +138,7 @@ func TestWriteSecretsDestinations(t *testing.T) {
 			root, project := mutationRoot(t), secretProject(t)
 			isolatedGit(t)
 			values := map[string]string{"A": "SENTINEL_SENSITIVE-sentinel"}
-			file := filepath.Join(root, "secrets.env")
+			file := filepath.Join(root, ".env")
 			switch kind {
 			case "empty":
 				values = nil
@@ -180,7 +180,7 @@ func TestWriteSecretsDestinations(t *testing.T) {
 					t.Fatal(err)
 				}
 				gitTest(t, root, "init", "--quiet")
-				gitTest(t, root, "add", "--force", "--", "secrets.env")
+				gitTest(t, root, "add", "--force", "--", ".env")
 			case "missing root":
 				root = filepath.Join(root, "missing")
 			case "missing project":
@@ -218,7 +218,7 @@ func TestWriteSecretsDestinations(t *testing.T) {
 func TestSecretsPublicationFailure(t *testing.T) {
 	root := mutationRoot(t)
 	isolatedGit(t)
-	dest := filepath.Join(root, "secrets.env")
+	dest := filepath.Join(root, ".env")
 	writeNative(t, dest, []byte("A='original'\n"))
 	if err := os.Chmod(dest, 0600); err != nil {
 		t.Fatal(err)
@@ -262,7 +262,7 @@ func TestWriteSecretsRestrictiveUmask(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	info, err := os.Stat(filepath.Join(root, "secrets.env"))
+	info, err := os.Stat(filepath.Join(root, ".env"))
 	if err != nil || info.Mode().Perm() != 0600 {
 		t.Fatal("restrictive umask affected file mode")
 	}

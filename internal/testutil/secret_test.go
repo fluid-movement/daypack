@@ -13,19 +13,19 @@ func TestSentinelCleanProject(t *testing.T) {
 	if os.Getenv("DAYPACK_TEST_SECRET") != sentinel {
 		t.Fatal("sentinel env not planted")
 	}
-	info, err := os.Stat(filepath.Join(f.Library, "secrets.env"))
+	info, err := os.Stat(filepath.Join(f.Library, ".env"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if info.Mode().Perm() != 0600 {
-		t.Fatal("secrets.env must be private")
+		t.Fatal(".env must be private")
 	}
 	writeFixture(t, filepath.Join(f.Project, ".config.json"), `{"TOKEN":"${DAYPACK_TEST_SECRET}"}`)
 	AssertNoSecret(t, f.Project, sentinel, "${DAYPACK_TEST_SECRET}", "")
 }
 
 func TestSentinelDetectsLeaks(t *testing.T) {
-	for _, location := range []string{"normal.txt", ".hidden/token", "stdout", "stderr", "link", "chain"} {
+	for _, location := range []string{"normal.txt", ".hidden/token", "stdout", "stderr", "link", "chain", "legacy-link"} {
 		t.Run(location, func(t *testing.T) {
 			f := NewFixture(t, false)
 			sentinel := PlantSentinel(t, f)
@@ -35,8 +35,12 @@ func TestSentinelDetectsLeaks(t *testing.T) {
 				outputs[0] = sentinel
 			case "stderr":
 				outputs[1] = sentinel
-			case "link", "chain":
-				target := filepath.Join(f.Library, "secrets.env")
+			case "link", "chain", "legacy-link":
+				target := filepath.Join(f.Library, ".env")
+				if location == "legacy-link" {
+					target = filepath.Join(f.Library, "secrets.env")
+					writeFixture(t, target, "unrelated legacy content")
+				}
 				if location == "chain" {
 					intermediate := filepath.Join(f.Library, "alias")
 					if err := os.Symlink(target, intermediate); err != nil {

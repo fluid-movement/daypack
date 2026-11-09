@@ -37,7 +37,10 @@ Check the installation with `daypack version`.
 Place this in your POSIX sh, bash or zsh profile so the harnesses you launch inherit your secrets. See [docs/secrets.md](docs/secrets.md) for details, including `--library` selections.
 
 ```sh
-daypack_secrets_file="${DAYPACK_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/daypack}/secrets.env"
+daypack_secrets_file="${DAYPACK_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/daypack}/.env"
+if [ ! -e "$daypack_secrets_file" ] && [ ! -L "$daypack_secrets_file" ]; then
+    daypack_secrets_file="${daypack_secrets_file%/.env}/secrets.env"
+fi
 if [ -f "$daypack_secrets_file" ]; then
     case $- in
         *a*) . "$daypack_secrets_file" ;;
@@ -69,9 +72,24 @@ is refreshed from the binary. Keep user notes outside these markers; their bytes
 are preserved. An unmarked file gets one appended region. Identical refreshes
 preserve file bytes and modification time; malformed markers cause an error.
 
-Re-running init on an existing directory updates only this guide, including in
-an empty directory or a library with invalid records. `doctor --fix` requires an
+Re-running init on an existing directory refreshes generated housekeeping,
+including in an empty directory or a library with invalid records. Invalid MCP
+records skip the example refresh with a warning. `doctor --fix` requires an
 existing library and performs the same refresh before ordinary validation. Both
-leave artifact records, skill support files, `.gitignore`, `secrets.env` and other
+leave artifact records, skill support files, `.env`, `secrets.env` and other
 files untouched. Neither reads secret values. Only the root guide is excluded
 from artifact discovery; skill support files named `AGENTS.md` remain valid.
+
+Private storage prefers `.env`, falling back to legacy `secrets.env` only when
+`.env` is absent; errors in `.env` never trigger fallback. Doctor recommends a
+manual rename; neither init nor doctor renames or edits either private file.
+Importer writes target `.env` and preserve legacy values and collision checks.
+
+Init and `library doctor --fix` generate `.env.example` with sorted, unique
+reference names from every library MCP field, including references with defaults.
+Generated assignments have empty values; defaults and environment values are never
+copied. Empty libraries get an empty managed block. Missing or stale housekeeping
+is reported by read-only doctor. Fix refreshes only generated content.
+The `env-example` and `library-secrets` marker blocks preserve surrounding user
+text and reject malformed markers. Git must ignore `.env` and `secrets.env` and
+keep `.env.example` trackable; conflicting user ignore rules are reported.

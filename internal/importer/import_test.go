@@ -25,7 +25,7 @@ func fixture(t *testing.T, worktree bool) (testutil.Fixture, importer.Options) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	write(t, filepath.Join(f.Library, ".gitignore"), "/secrets.env\n")
+	write(t, filepath.Join(f.Library, ".gitignore"), "/.env\n")
 	project := f.Project
 	if worktree {
 		project = f.Worktree
@@ -197,14 +197,14 @@ func TestSecretsSentinelAndRepeat(t *testing.T) {
 	}
 	testutil.AssertNoSecret(t, f.Project, sentinel, string(report))
 	testutil.AssertNoSecret(t, filepath.Join(f.Library, "mcp"), sentinel)
-	stored, err := os.ReadFile(filepath.Join(f.Library, "secrets.env"))
+	stored, err := os.ReadFile(filepath.Join(f.Library, ".env"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(string(stored), "TOKENS_API_TOKEN='"+sentinel+"'") || !strings.Contains(string(stored), "REMOTE_AUTHORIZATION='Bearer "+sentinel+"'") {
 		t.Fatal("complete original values not stored")
 	}
-	st, err := os.Stat(filepath.Join(f.Library, "secrets.env"))
+	st, err := os.Stat(filepath.Join(f.Library, ".env"))
 	if err != nil || st.Mode().Perm() != 0600 {
 		t.Fatal("store is not private")
 	}
@@ -361,7 +361,7 @@ func TestSecretStorageFailures(t *testing.T) {
 		t.Run(failure, func(t *testing.T) {
 			f, opts := fixture(t, false)
 			write(t, filepath.Join(f.Home, ".claude.json"), `{"mcpServers":{"collision":{"command":"echo","env":{"TOKEN":"SENTINEL","NEW_TOKEN":"new"}}}}`)
-			store := filepath.Join(f.Library, "secrets.env")
+			store := filepath.Join(f.Library, ".env")
 			switch failure {
 			case "different":
 				write(t, store, "COLLISION_TOKEN=other\n")

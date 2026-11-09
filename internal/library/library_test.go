@@ -267,7 +267,7 @@ func TestUnknownAndDeterminism(t *testing.T) {
 	for _, p := range []string{"README", "mcp/unknown.json", "agents/sub/file", "skills/unknown.txt"} {
 		write(t, root, p, "")
 	}
-	for _, p := range []string{".git/config", ".gitignore", "secrets.env", "skills/docs/support/nested"} {
+	for _, p := range []string{".git/config", ".gitignore", ".env", "skills/docs/support/nested"} {
 		write(t, root, p, "opaque")
 	}
 	write(t, root, "skills/docs/SKILL.md", "---\nname: docs\ndescription: fine\n---")

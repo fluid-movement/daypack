@@ -16,7 +16,7 @@ import (
 func TestInstructionsContent(t *testing.T) {
 	root := mutationRoot(t)
 	data := string(mustRead(t, filepath.Join(root, "AGENTS.md")))
-	for _, text := range []string{"Generated content revision: 1", "--library, DAYPACK_HOME, XDG_CONFIG_HOME/daypack", "HOME/.config/daypack", "skills/<name>/SKILL.md", "mcp/<name>.toml", "fragments/<name>.md", "agents/<name>.md", "library doctor --fix", "library import [--dry-run]", "--from <native-path>", "library edit", "library rename", "library remove", "daypack list", "secrets.env", "does not automatically source dotenv"} {
+	for _, text := range []string{"Generated content revision: 2", "--library, DAYPACK_HOME, XDG_CONFIG_HOME/daypack", "HOME/.config/daypack", "skills/<name>/SKILL.md", "mcp/<name>.toml", "fragments/<name>.md", "agents/<name>.md", "library doctor --fix", "library import [--dry-run]", "--from <native-path>", "library edit", "library rename", "library remove", "daypack list", ".env", "does not automatically source dotenv"} {
 		if !strings.Contains(data, text) {
 			t.Errorf("missing %q", text)
 		}
@@ -172,7 +172,7 @@ func instructionSnapshot(t *testing.T, root string) map[string]instructionFile {
 
 func TestInstructionsUntouchedRecords(t *testing.T) {
 	root := mutationRoot(t)
-	for _, name := range []string{"skills/review/SKILL.md", "skills/review/AGENTS.md", "skills/review/support/data", "mcp/invalid.toml", "fragments/style.md", "agents/review.md", "secrets.env", "unrelated"} {
+	for _, name := range []string{"skills/review/SKILL.md", "skills/review/AGENTS.md", "skills/review/support/data", "mcp/invalid.toml", "fragments/style.md", "agents/review.md", ".env", "unrelated"} {
 		if err := os.MkdirAll(filepath.Dir(filepath.Join(root, name)), 0755); err != nil {
 			t.Fatal(err)
 		}
@@ -378,7 +378,7 @@ func TestInstructionsFIFOAndEmptyRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 	entries, err := os.ReadDir(empty)
-	if err != nil || len(entries) != 1 || entries[0].Name() != "AGENTS.md" {
+	if err != nil || len(entries) != 3 {
 		t.Fatalf("populated empty root: %v %v", entries, err)
 	}
 }

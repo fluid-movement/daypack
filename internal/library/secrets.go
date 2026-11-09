@@ -11,21 +11,21 @@ import (
 	"github.com/fluid-movement/daypack/internal/secrets"
 )
 
-// secretsMetadata never opens secrets.env or follows its leaf symlink.
-func secretsMetadata(root string) ([]Problem, error) {
-	file := filepath.Join(root, "secrets.env")
+// secretsMetadata never opens .env or follows its leaf symlink.
+func secretsFileMetadata(root, name string) ([]Problem, error) {
+	file := filepath.Join(root, name)
 	info, err := os.Lstat(file)
 	if os.IsNotExist(err) {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("inspect secrets.env metadata: %w", err)
+		return nil, fmt.Errorf("inspect .env metadata: %w", err)
 	}
 	if !info.Mode().IsRegular() {
-		return []Problem{problem(file, "file", "secrets.env must be a regular file, not a symlink or special file", "")}, nil
+		return []Problem{problem(file, "file", name+" must be a regular file, not a symlink or special file", "")}, nil
 	}
 	if info.Mode().Perm()&0077 != 0 {
-		return []Problem{{Warning, file, "permissions", "secrets.env is accessible to group or others", "Run chmod 600 on the quoted secrets.env path."}}, nil
+		return []Problem{{Warning, file, "permissions", name + " is accessible to group or others", "Run chmod 600 on the quoted " + name + " path."}}, nil
 	}
 	return nil, nil
 }
@@ -54,13 +54,13 @@ func privateSecretsPath(root, projectRoot string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("resolve project root: %w", err)
 	}
-	dest := filepath.Join(root, "secrets.env")
+	dest := filepath.Join(root, ".env")
 	rel, err := filepath.Rel(project, dest)
 	if err != nil {
 		return "", err
 	}
 	if rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) && !filepath.IsAbs(rel) {
-		return "", fmt.Errorf("secrets.env must be outside the project/worktree")
+		return "", fmt.Errorf(".env must be outside the project/worktree")
 	}
 	if _, err := safePath(dest); err != nil {
 		return "", err
@@ -69,7 +69,7 @@ func privateSecretsPath(root, projectRoot string) (string, error) {
 }
 
 func checkSecretsDestination(root string) error {
-	problems, err := secretsMetadata(root)
+	problems, err := secretsFileMetadata(root, ".env")
 	if err != nil {
 		return err
 	}
@@ -81,6 +81,9 @@ func checkSecretsDestination(root string) error {
 		return err
 	}
 	for _, p := range hygiene {
+		if p.Severity != Error || filepath.Base(p.File) == ".env.example" {
+			continue
+		}
 		return fmt.Errorf("%s: %s; %s", p.File, p.Message, p.Hint)
 	}
 	return nil
@@ -112,7 +115,7 @@ func prepareSecrets(root, projectRoot string, values map[string]string) (string,
 	if err := checkSecretsDestination(root); err != nil {
 		return "", nil, nil, err
 	}
-	data, err := os.ReadFile(dest)
+	data, err := readPrivateStore(root, dest)
 	if err != nil && !os.IsNotExist(err) {
 		return "", nil, nil, err
 	}
@@ -145,7 +148,9 @@ func WriteSecrets(root, projectRoot string, values map[string]string) (err error
 		return err
 	}
 	if len(missing) == 0 {
-		return nil
+		if _, e := os.Lstat(dest); e == nil {
+			return nil
+		}
 	}
 	sort.Strings(missing)
 	var out strings.Builder
@@ -195,7 +200,7 @@ func publishSecrets(stage, dest string) error {
 		return err
 	}
 	if err := os.Rename(stage, dest); err != nil {
-		return fmt.Errorf("publish secrets.env: %w", err)
+		return fmt.Errorf("publish .env: %w", err)
 	}
 	return nil
 }
@@ -206,7 +211,7 @@ func publishSecrets(stage, dest string) error {
 func parseSecrets(data []byte) (map[string]string, error) {
 	values := map[string]string{}
 	for index, line := range strings.Split(string(data), "\n") {
-		fail := func() error { return fmt.Errorf("unsupported secrets.env syntax at line %d", index+1) }
+		fail := func() error { return fmt.Errorf("unsupported .env syntax at line %d", index+1) }
 		if strings.ContainsAny(line, "\x00\r") {
 			return nil, fail()
 		}
@@ -271,9 +276,41 @@ func StoredSecrets(root, projectRoot string) (map[string]string, error) {
 	if err = checkSecretsDestination(root); err != nil {
 		return nil, err
 	}
-	data, err := os.ReadFile(dest)
+	data, err := readPrivateStore(root, dest)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
 	}
 	return parseSecrets(data)
+}
+
+// readPrivateStore falls back only on an absent canonical file, never a bad one.
+func readPrivateStore(root, dest string) ([]byte, error) {
+	if _, err := os.Lstat(dest); os.IsNotExist(err) {
+		dest = filepath.Join(root, "secrets.env")
+		problems, err := secretsFileMetadata(root, "secrets.env")
+		if err != nil {
+			return nil, err
+		}
+		if len(problems) > 0 {
+			return nil, fmt.Errorf("%s: %s", dest, problems[0].Message)
+		}
+	} else if err != nil {
+		return nil, err
+	}
+	return os.ReadFile(dest)
+}
+
+func secretsMetadata(root string) ([]Problem, error) {
+	var out []Problem
+	for _, name := range []string{".env", "secrets.env"} {
+		p, err := secretsFileMetadata(root, name)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, p...)
+	}
+	if _, err := os.Lstat(filepath.Join(root, "secrets.env")); err == nil {
+		out = append(out, Problem{Warning, filepath.Join(root, "secrets.env"), "legacy", "legacy secrets.env is present", "Manually rename secrets.env to .env; .env takes precedence when present."})
+	}
+	return out, nil
 }

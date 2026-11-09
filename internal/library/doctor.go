@@ -26,6 +26,11 @@ func Doctor(path string) ([]Problem, error) {
 		return nil, err
 	}
 	problems := l.Validate()
+	generated, e := generatedProblems(l.root)
+	if e != nil {
+		return nil, e
+	}
+	problems = append(problems, generated...)
 	metadata, err := secretsMetadata(l.root)
 	if err != nil {
 		return nil, err
@@ -42,37 +47,63 @@ func Doctor(path string) ([]Problem, error) {
 
 // secretsHygiene inspects only Git policy, without reading secret contents.
 func secretsHygiene(root string) ([]Problem, error) {
+	var out []Problem
+	for _, name := range []string{".env", "secrets.env", ".env.example"} {
+		if name == "secrets.env" {
+			if _, err := os.Lstat(filepath.Join(root, name)); os.IsNotExist(err) {
+				continue
+			}
+		}
+		p, err := fileHygiene(root, name)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, p...)
+	}
+	sortProblems(out)
+	return out, nil
+}
+
+// secretsHygiene inspects only Git policy, without reading secret contents.
+func fileHygiene(root, name string) ([]Problem, error) {
 	problems := []Problem{}
-	file := filepath.Join(root, "secrets.env")
+	file := filepath.Join(root, name)
 	add := func(message string) {
-		problems = append(problems, problem(file, "git", message, "Ignore /secrets.env and keep it untracked."))
+		problems = append(problems, problem(file, "git", message, "Ignore /.env and /secrets.env; keep /.env.example trackable."))
 	}
 	status, err := gitStatus(root, "rev-parse", "--is-inside-work-tree")
 	if err != nil {
 		return nil, fmt.Errorf("inspect Git hygiene in %s: %w", root, err)
 	}
 	if status == 0 {
-		tracked, e := gitStatus(root, "ls-files", "--error-unmatch", "--", "secrets.env")
+		tracked, e := gitStatus(root, "ls-files", "--error-unmatch", "--", name)
 		if e != nil {
 			return nil, e
 		}
 		switch tracked {
 		case 0:
-			add("secrets.env is tracked by git")
+			if name != ".env.example" {
+				add(name + " is tracked by git")
+			}
 		case 1:
 		default:
-			add("could not inspect tracked secrets.env with git")
+			add("could not inspect tracked " + name + " with git")
 		}
-		ignored, e := gitStatus(root, "check-ignore", "--no-index", "--", "secrets.env")
+		ignored, e := gitStatus(root, "check-ignore", "--no-index", "--", name)
 		if e != nil {
 			return nil, e
 		}
 		switch ignored {
 		case 0:
+			if name == ".env.example" {
+				add(".env.example is ignored by git")
+			}
 		case 1:
-			add("secrets.env is not ignored by git")
+			if name != ".env.example" {
+				add(name + " is not ignored by git")
+			}
 		default:
-			add("could not inspect secrets.env ignore status with git")
+			add("could not inspect " + name + " ignore status with git")
 		}
 	} else {
 		// A .git marker in an ancestor means a failing repository, not a clean
@@ -96,16 +127,24 @@ func secretsHygiene(root string) ([]Problem, error) {
 		ignored := false
 		for _, line := range strings.Split(string(data), "\n") {
 			line = strings.TrimSpace(line)
-			if line == "/secrets.env" || line == "secrets.env" {
-				ignored = true
+			negate := strings.HasPrefix(line, "!")
+			pattern := strings.TrimPrefix(strings.TrimPrefix(line, "!"), "/")
+			match, err := filepath.Match(pattern, name)
+			if err != nil {
+				// Invalid ignore patterns do not match any file.
+				continue
 			}
-			if line == "!/secrets.env" || line == "!secrets.env" {
-				ignored = false
+			if match {
+				ignored = !negate
 			}
 		}
-		if !ignored {
-			add("secrets.env has no ignore rule in library .gitignore")
+		if name == ".env.example" && ignored {
+			add(".env.example is ignored by library .gitignore")
 		}
+		if name != ".env.example" && !ignored {
+			add(name + " has no ignore rule in library .gitignore")
+		}
+
 	}
 	sortProblems(problems)
 	return problems, nil

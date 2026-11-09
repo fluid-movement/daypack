@@ -132,7 +132,7 @@ func TestMutationStubYAMLNames(t *testing.T) {
 		}
 	}
 }
-func TestInitRefusesExisting(t *testing.T) {
+func TestInitRefreshesExisting(t *testing.T) {
 	root := mutationRoot(t)
 	for _, path := range []string{root, filepath.Join(root, "empty"), filepath.Join(root, "file"), filepath.Join(root, "dangling")} {
 		switch filepath.Base(path) {
@@ -153,10 +153,10 @@ func TestInitRefusesExisting(t *testing.T) {
 			t.Fatalf("init %s: %v", path, err)
 		}
 	}
-	if string(mustRead(t, filepath.Join(root, ".gitignore"))) != "/secrets.env\n" {
+	if string(mustRead(t, filepath.Join(root, ".gitignore"))) != "# daypack:begin library-secrets\n"+ignoreBody+"# daypack:end library-secrets\n" {
 		t.Fatal("ignore changed")
 	}
-	if _, err := os.Stat(filepath.Join(root, "secrets.env")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(root, ".env")); !os.IsNotExist(err) {
 		t.Fatal("created secrets file")
 	}
 }

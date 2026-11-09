@@ -24,7 +24,7 @@ func importFixture(t *testing.T) testutil.Fixture {
 		t.Fatal(err)
 	}
 	f.Library = root
-	importWrite(t, filepath.Join(root, ".gitignore"), "/secrets.env\n")
+	importWrite(t, filepath.Join(root, ".gitignore"), "/.env\n")
 	return f
 }
 func importWrite(t *testing.T, path, body string) {
@@ -161,7 +161,7 @@ func TestLibraryImportSelectedStorageAndOverrides(t *testing.T) {
 			if code != 0 {
 				t.Fatalf("selected import failed (%d): %s %s", code, out.String(), stderr.String())
 			}
-			if _, err := os.Stat(filepath.Join(f.Library, "secrets.env")); err != nil {
+			if _, err := os.Stat(filepath.Join(f.Library, ".env")); err != nil {
 				t.Fatal("selected store missing")
 			}
 			if _, err := os.Stat(filepath.Join(f.Library, "mcp", "selected.toml")); err != nil {

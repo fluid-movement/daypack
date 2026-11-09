@@ -23,7 +23,7 @@ func TestSecretsImporterHandoff(t *testing.T) {
 					t.Fatal(err)
 				}
 				f.Library = canonical
-				if err := os.WriteFile(filepath.Join(f.Library, ".gitignore"), []byte("/secrets.env\n"), 0600); err != nil {
+				if err := os.WriteFile(filepath.Join(f.Library, ".gitignore"), []byte("/.env\n"), 0600); err != nil {
 					t.Fatal(err)
 				}
 				sentinel := testutil.PlantSentinel(t, f)
@@ -90,11 +90,11 @@ func TestSecretsImporterHandoff(t *testing.T) {
 				if err := publish(map[string]string{"SYNTHETIC_TOKEN": sentinel, "SYNTHETIC_EMPTY": ""}, "sanitized"); err != nil {
 					t.Fatal(err)
 				}
-				stored, err := os.ReadFile(filepath.Join(selected, "secrets.env"))
+				stored, err := os.ReadFile(filepath.Join(selected, ".env"))
 				if err != nil || !bytes.Contains(stored, []byte("SYNTHETIC_TOKEN='"+sentinel+"'")) || !bytes.Contains(stored, []byte("SYNTHETIC_EMPTY=''")) {
 					t.Fatal("complete batch was not stored")
 				}
-				info, err := os.Stat(filepath.Join(selected, "secrets.env"))
+				info, err := os.Stat(filepath.Join(selected, ".env"))
 				if err != nil || info.Mode().Perm() != 0600 {
 					t.Fatal("handoff file is not private")
 				}
@@ -110,13 +110,13 @@ func TestSecretsImporterHandoff(t *testing.T) {
 					t.Fatal("definition published after conflict")
 				}
 				testutil.AssertNoSecret(t, project, sentinel, errString(err))
-				after, readErr := os.ReadFile(filepath.Join(selected, "secrets.env"))
+				after, readErr := os.ReadFile(filepath.Join(selected, ".env"))
 				if readErr != nil || !bytes.Equal(stored, after) {
 					t.Fatal("conflicting batch changed storage")
 				}
 				// Validate against changing environment and malformed private storage:
 				// neither is an input to validation, and validation never modifies them.
-				file := filepath.Join(selected, "secrets.env")
+				file := filepath.Join(selected, ".env")
 				if err := os.WriteFile(file, []byte("malformed-private-file"), 0600); err != nil {
 					t.Fatal(err)
 				}

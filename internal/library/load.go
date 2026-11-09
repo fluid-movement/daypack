@@ -100,7 +100,7 @@ func Load(libraryPath string) (*Library, error) {
 	return l, nil
 }
 func housekeeping(name string) bool {
-	return name == ".git" || name == ".gitignore" || name == "secrets.env"
+	return name == ".git" || name == ".gitignore" || name == "secrets.env" || name == ".env" || name == ".env.example"
 }
 func (l *Library) unknown(path string) {
 	l.problems = append(l.problems, Problem{Severity: Warning, File: path, Message: "unknown library entry ignored"})

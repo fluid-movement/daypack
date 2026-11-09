@@ -16,7 +16,7 @@ const instructionsEnd = "<!-- daypack:end library-instructions -->"
 const instructionsBody = `
 # Daypack library guide
 
-Generated content revision: 1. Refresh with daypack library init or daypack library doctor --fix.
+Generated content revision: 2. Refresh with daypack library init or daypack library doctor --fix.
 Keep personal notes outside the library-instructions markers; edits inside are replaced.
 These instructions apply only to this library folder, across harnesses. No harness skills
 or global instructions are installed.
@@ -80,10 +80,10 @@ Authorization = "Bearer ${DOCS_TOKEN}"
 
 Library management:
 - daypack library init: initialize an absent library with artifact directories,
-  .gitignore and this guide. On an existing directory, refresh only this guide,
-  even if records are invalid; an empty existing directory stays otherwise empty.
+  .gitignore, .env.example and this guide. Existing directories refresh generated
+  housekeeping only. Invalid MCP skips the example with a warning.
 - daypack library doctor: read-only validation of records and secrets metadata/Git hygiene.
-- daypack library doctor --fix: refresh only this guide, then validate normally;
+- daypack library doctor --fix: refresh generated housekeeping, then validate normally;
   requires an existing library and does not repair records or secrets.
 - daypack library import [--dry-run]: import user skills, agents and MCP definitions
   from supported harness configurations; --dry-run previews without writing.
@@ -102,13 +102,17 @@ daypack apply materializes configuration; daypack status and daypack check inspe
 ## Reference-only secrets
 
 Credentials belong in the harness's inherited environment or the optional ignored,
-owner-only (chmod 600) library secrets.env, never in records, defaults or this guide.
+owner-only (chmod 600) library .env, never in records, defaults or this guide.
 Use ${NAME} or ${NAME:-default} with non-secret defaults in MCP command, args, env,
 url and headers. Daypack does not automatically source dotenv or resolve values
 when generating or validating configuration. Load trusted secrets into your shell
-before launching the harness. Generation never reads secrets.env; doctor checks
+before launching the harness. Reads fall back to legacy secrets.env only when .env
+is absent; manually rename legacy storage. Generation never reads either store; doctor checks
 only its metadata and Git hygiene. Init refresh and doctor --fix leave all records,
-support files, .gitignore, secrets.env and unrelated files untouched.
+support files, .env, secrets.env and unrelated files untouched.
+Init and doctor --fix refresh managed .gitignore and .env.example blocks.
+.env.example lists all referenced variables, including defaults, with empty values.
+Keep .env and secrets.env ignored and .env.example trackable.
 `
 
 func renderInstructions(data []byte) ([]byte, error) {

@@ -41,8 +41,8 @@ Call `PlantSentinel(t, f)` before apply/status/import and `AssertNoSecret(t,
 f.Project, sentinel, result.Stdout, result.Stderr)` afterward, on success and
 error paths. The scanner checks every regular project file, including hidden and
 untracked files, without following external symlinks, and checks link targets
-for secrets.env exposure. Failure diagnostics contain locations, never the
-sentinel. The private library secrets.env intentionally holds the synthetic value
+for .env exposure. Failure diagnostics contain locations, never the
+sentinel. The private library .env intentionally holds the synthetic value
 outside the project. Foundation tests inject leaks directly; they never execute
 MCP commands or resolve real credentials.
 

@@ -9,13 +9,13 @@ authoritative.
 
 The selected library directory is `--library` when explicitly supplied, otherwise
 `DAYPACK_HOME`, then `$XDG_CONFIG_HOME/daypack`, then `$HOME/.config/daypack`.
-Its optional private file is exactly `<selected-library>/secrets.env`. Keep this
-outside the current project/worktree. `daypack library init` adds `/secrets.env`
+Its optional private file is exactly `<selected-library>/.env`. Keep this
+outside the current project/worktree. `daypack library init` adds `/.env`
 to the library `.gitignore` but deliberately creates no secrets file. Never
 commit that file. Both tracked files and files without an effective ignore rule
 are rejected by the storage helper and reported by `daypack library doctor`.
 
-Use owner-only permissions (`chmod 600 '/your selected library/secrets.env'`).
+Use owner-only permissions (`chmod 600 '/your selected library/.env'`).
 The writer refuses existing files with any group/other permission bits; it never
 silently changes their permissions. Doctor warns about these permissions, with
 exit status 0, and reports Git hygiene and non-regular-file errors with exit
@@ -30,7 +30,10 @@ never enable shell tracing around credentials. This example preserves an already
 enabled `allexport` (`set -a`) option:
 
 ```sh
-daypack_secrets_file="${DAYPACK_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/daypack}/secrets.env"
+daypack_secrets_file="${DAYPACK_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/daypack}/.env"
+if [ ! -e "$daypack_secrets_file" ] && [ ! -L "$daypack_secrets_file" ]; then
+    daypack_secrets_file="${daypack_secrets_file%/.env}/secrets.env"
+fi
 if [ -f "$daypack_secrets_file" ]; then
     case $- in
         *a*) . "$daypack_secrets_file" ;;
@@ -43,7 +46,7 @@ unset daypack_secrets_file
 ```
 
 For a `--library '/some explicit path'` selection, replace the first assignment
-with `daypack_secrets_file='/some explicit path/secrets.env'`.
+with `daypack_secrets_file='/some explicit path/.env'`.
 `set -a` exports the assignments so child processes inherit them. Sourcing
 **overwrites same-named shell variables**; you control when to source it. Reload
 that profile (or open a new shell), then launch/restart the harness from that
@@ -134,10 +137,26 @@ and import sources. No global instructions or harness skills are installed.
 Re-running `daypack library init` on an existing directory, or running
 `daypack library doctor --fix`, creates missing instructions or refreshes stale
 managed content. Identical runs preserve bytes and modification time. Existing
-empty directories receive only the guide; invalid artifacts do not prevent a
-refresh. `--fix` refuses a missing library and then runs normal validation,
+empty directories receive generated housekeeping; invalid MCP records skip the
+example refresh with a warning while init succeeds. `--fix` refuses a missing
+library and then runs normal validation,
 retaining unrelated diagnostics. Plain doctor remains read-only.
 
-These refreshes leave records, support files, `.gitignore`, `secrets.env` and
+These refreshes leave records, support files, `.env`, `secrets.env` and
 unrelated files untouched. They neither repair secrets nor read secret values.
-Fresh init alone creates the artifact folders and the `/secrets.env` ignore rule.
+Fresh init alone creates the artifact folders. Init and doctor --fix refresh
+managed .gitignore and .env.example blocks while preserving notes outside markers.
+
+Private storage prefers `.env`, falling back to legacy `secrets.env` only when
+`.env` is absent; errors in `.env` never trigger fallback. Doctor recommends a
+manual rename; neither init nor doctor renames or edits either private file.
+Importer writes target `.env` and preserve legacy values and collision checks.
+
+Init and `library doctor --fix` generate `.env.example` with sorted, unique
+reference names from every library MCP field, including references with defaults.
+Generated assignments have empty values; defaults and environment values are never
+copied. Empty libraries get an empty managed block. Missing or stale housekeeping
+is reported by read-only doctor. Fix refreshes only generated content.
+The `env-example` and `library-secrets` marker blocks preserve surrounding user
+text and reject malformed markers. Git must ignore `.env` and `secrets.env` and
+keep `.env.example` trackable; conflicting user ignore rules are reported.

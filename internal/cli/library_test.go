@@ -254,7 +254,7 @@ func TestLibraryDoctorSecretsModes(t *testing.T) {
 		for _, output := range []string{"text", "--json", "--quiet"} {
 			t.Run(kind+"/"+output, func(t *testing.T) {
 				root := libraryEnvironment(t)
-				file := filepath.Join(root, "secrets.env")
+				file := filepath.Join(root, ".env")
 				switch kind {
 				case "symlink":
 					if err := os.Symlink(filepath.Join(root, "missing"), file); err != nil {
@@ -280,7 +280,7 @@ func TestLibraryDoctorSecretsModes(t *testing.T) {
 						t.Fatal(err)
 					}
 					if kind == "tracked" {
-						for _, args := range [][]string{{"init", "--quiet"}, {"add", "--force", "--", "secrets.env"}} {
+						for _, args := range [][]string{{"init", "--quiet"}, {"add", "--force", "--", ".env"}} {
 							if err := exec.Command("git", append([]string{"-C", root}, args...)...).Run(); err != nil {
 								t.Fatal(err)
 							}
@@ -385,4 +385,38 @@ func TestLibraryInstructionsFix(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLibraryGeneratedHousekeepingCLI(t *testing.T) {
+	root := libraryEnvironment(t)
+	mcp := filepath.Join(root, "mcp", "example.toml")
+	if err := os.WriteFile(mcp, []byte("type = 'stdio'\ncommand = '${CLI_COMMAND:-server}'\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	code, out, stderr := libraryInvoke(t, root, "doctor", "--json")
+	if code != Success || stderr != "" || !strings.Contains(out, "stale") {
+		t.Fatalf("%d %s %s", code, out, stderr)
+	}
+	object(t, out, code, "daypack library doctor")
+	code, out, stderr = libraryInvoke(t, root, "doctor", "--fix", "--quiet")
+	if code != Success || out != "" || stderr != "" {
+		t.Fatalf("%d %s %s", code, out, stderr)
+	}
+	data, err := os.ReadFile(filepath.Join(root, ".env.example"))
+	if err != nil || !strings.Contains(string(data), "CLI_COMMAND=\n") {
+		t.Fatalf("%s %v", data, err)
+	}
+	if err = os.WriteFile(mcp, []byte("type = [CLI_PRIVATE_SENTINEL"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	code, out, stderr = libraryInvoke(t, root, "init", "--json")
+	if code != Success || stderr != "" || !strings.Contains(out, "warning") || strings.Contains(out, "CLI_PRIVATE_SENTINEL") {
+		t.Fatalf("%d %s %s", code, out, stderr)
+	}
+	object(t, out, code, "daypack library init")
+	code, out, _ = libraryInvoke(t, root, "doctor", "--fix", "--json")
+	if code != Error || strings.Contains(out, "CLI_PRIVATE_SENTINEL") {
+		t.Fatalf("%d %s", code, out)
+	}
+	object(t, out, code, "daypack library doctor")
 }

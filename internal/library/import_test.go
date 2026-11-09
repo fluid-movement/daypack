@@ -15,7 +15,7 @@ func TestImportPreflightAndExclusiveMCP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = os.WriteFile(filepath.Join(root, ".gitignore"), []byte("/secrets.env\n"), 0600); err != nil {
+	if err = os.WriteFile(filepath.Join(root, ".gitignore"), []byte("/.env\n"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	before := testutil.SnapshotTree(t, root)

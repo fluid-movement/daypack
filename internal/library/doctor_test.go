@@ -86,13 +86,13 @@ func TestDoctorGitHygiene(t *testing.T) {
 			if err != nil || len(problems) != 0 {
 				t.Fatalf("missing secrets file should be ignored: %v %v", problems, err)
 			}
-			writeNative(t, filepath.Join(root, "secrets.env"), []byte("TOKEN=DOCTOR_SENTINEL_PRIVATE\n"))
-			gitTest(t, root, "add", "--force", "--", "secrets.env")
+			writeNative(t, filepath.Join(root, ".env"), []byte("TOKEN=DOCTOR_SENTINEL_PRIVATE\n"))
+			gitTest(t, root, "add", "--force", "--", ".env")
 			problems, err = Doctor(root)
 			if err != nil || !doctorHasProblem(problems, Error, "tracked") || doctorHasProblem(problems, Error, "not ignored") {
 				t.Fatalf("%v %v", problems, err)
 			}
-			writeNative(t, filepath.Join(root, ".gitignore"), []byte("/secrets.env\n!/secrets.env\n"))
+			writeNative(t, filepath.Join(root, ".gitignore"), []byte("/.env\n!/.env\n"))
 			problems, err = Doctor(root)
 			if err != nil || !doctorHasProblem(problems, Error, "not ignored") {
 				t.Fatalf("%v %v", problems, err)
@@ -134,7 +134,7 @@ func TestDoctorSecretsMetadata(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			root := mutationRoot(t)
 			isolatedGit(t)
-			file := filepath.Join(root, "secrets.env")
+			file := filepath.Join(root, ".env")
 			switch kind {
 			case "symlink":
 				if err := os.Symlink(filepath.Join(root, "nonexistent"), file); err != nil {

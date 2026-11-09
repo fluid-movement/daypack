@@ -7,45 +7,44 @@ import (
 	"path/filepath"
 )
 
-func Init(path string) (err error) {
+func Init(path string) error { _, err := InitWithProblems(path); return err }
+
+func InitWithProblems(path string) (problems []Problem, err error) {
 	path, err = filepath.Abs(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if info, e := os.Stat(path); e == nil {
 		if !info.IsDir() {
-			return fmt.Errorf("library %s is not a directory", path)
+			return nil, fmt.Errorf("library %s is not a directory", path)
 		}
-		return RefreshInstructions(path)
+		return RefreshHousekeeping(path)
 	} else if !os.IsNotExist(e) {
-		return e
+		return nil, e
 	}
 	if err = os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		return err
+		return nil, err
 	}
 	parent, err := filepath.EvalSymlinks(filepath.Dir(path))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	path = filepath.Join(parent, filepath.Base(path))
 	stage, clean, err := stagePath(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func() { err = errors.Join(err, clean()) }()
 	if err = os.Mkdir(stage, 0755); err != nil {
-		return err
+		return nil, err
 	}
 	for _, name := range []string{"skills", "mcp", "fragments", "agents"} {
 		if err = os.Mkdir(filepath.Join(stage, name), 0755); err != nil {
-			return fmt.Errorf("initialize library %s: %w", path, err)
+			return nil, fmt.Errorf("initialize library %s: %w", path, err)
 		}
 	}
-	if err = os.WriteFile(filepath.Join(stage, ".gitignore"), []byte("/secrets.env\n"), 0644); err != nil {
-		return err
+	if problems, err = RefreshHousekeeping(stage); err != nil {
+		return nil, err
 	}
-	if err = RefreshInstructions(stage); err != nil {
-		return err
-	}
-	return publish(stage, path)
+	return problems, publish(stage, path)
 }

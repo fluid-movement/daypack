@@ -73,27 +73,29 @@ exclusion. These are offline composition tests, not production apply/status CLI
 coverage. Live Claude approval in a never-trusted folder and settings lookup in a
 worktree remain separate manual checks requiring user approval.
 
-### Claude Code MCP approval: UNVERIFIED
+### Claude Code MCP approval: verified 2026-11-09 (Claude Code 2.1.319)
 
-Whether Claude Code honours `enabledMcpjsonServers` from an untracked
-`.claude/settings.local.json` in a never-trusted folder, and which
-`settings.local.json` it reads inside a git worktree, has NOT been verified. The
-adapter therefore always emits a static `mcp-approval` Note telling the user
-that project MCP servers may need approval via `/mcp` (or
-`enabledMcpjsonServers`) on first use. To verify later (requires user OK for a
-live session):
+Checked live with `claude mcp list` (no model call) using a throwaway stdio
+server (`sleep 2`) that daypack applied into `.mcp.json` and an untracked
+`.claude/settings.local.json` (`enabledMcpjsonServers: ["probe"]`):
 
-1. Create a fresh folder outside any trusted path, `git init` it, and apply a
-   manifest with one innocuous local MCP server so `.mcp.json` and
-   `.claude/settings.local.json` are written.
-2. Start `claude` in that folder. Record the Claude version, config paths and
-   trust state. Observe whether the server is connected without an approval
-   prompt or `/mcp` shows it pending.
-3. From that repository run `git worktree add ../wt`, apply in the worktree (its
-   own `.mcp.json` and `settings.local.json`), start `claude` there, and record
-   whether approval is honoured and which settings file was read.
-4. Log the observations in the issue; if approval is not honoured keep the Note
-   (and let status print the `/mcp` hint), otherwise reconsider it.
+- Trusted folder (a subdirectory of an already-trusted project): the server is
+  approved from `settings.local.json` and Claude tries to connect (it fails only
+  because `sleep` is not an MCP server). Control without the settings file:
+  `Pending approval`.
+- Git worktree of an already-trusted repository, with its own `.mcp.json` and
+  `settings.local.json` written by apply: approved the same way; control without
+  the settings file: `Pending approval`. So the worktree's own
+  `settings.local.json` is the file read.
+- Never-trusted folder, and a worktree of a never-trusted repository: `Pending
+  approval` even with `enabledMcpjsonServers` present. Folder trust has to be
+  granted first (the interactive trust dialog on first `claude` run, not
+  exercised here); approval is honoured only afterwards.
+
+Conclusion: approval entries work, but cannot bypass folder trust. The static
+`mcp-approval` Note stays, because a fresh clone or worktree of an untrusted
+repo still prompts. Not verified: the interactive first-run trust flow itself
+and a real MCP server connecting.
 
 ## Verification
 

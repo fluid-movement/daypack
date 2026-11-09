@@ -31,3 +31,7 @@
 * [Library secrets use .env with a generated empty example](/decisions/01M6XFZ9Q1ZANXHCE7AM1Y9TGK.md) - Use .env as the canonical private library file and generate .env.example from MCP references; retain legacy secrets.env read fallback. The user chose the established .env convention and wants an example showing which tokens to add.
 * [Library agent docs: AGENTS.md only, no skills](/decisions/01M6XGVCRZG1BG6E094NW1NKW0.md) - Library folder gets a generated AGENTS.md; no per-harness skills.
 * [Library secrets file is .env with .env.example](/decisions/01M6XGVCW95SEEMAZTKT8V68VM.md) - Rename secrets.env to .env and generate .env.example.
+* [Init refreshes generated housekeeping; invalid MCP never fails init](/decisions/01M6ZW8DX74P6WYV2S84ZMTWRY.md) - Resolves blocker: re-running library init is a refresh, not an error.
+* [Codex uses native shared skills, AGENTS.md and project custom-agent TOML](/decisions/01M6ZWCK6FV4C7BKMC5E55EWZE.md) - Support all four artifact types; translate library agent Markdown to standalone project TOML.
+* [Codex MCP uses native environment-name fields with explicit unsupported cases](/decisions/01M6ZWCKCZMPA0N35F21YCNEMC.md) - Render supported references without reading credentials or introducing wrappers.
+* [Add table-scoped TOML ownership for Codex config; preserve explicit harness selections](/decisions/01M6ZWCKKKTBADN91AMJ2F52NH.md) - Extend core ownership instead of owning or re-encoding the entire Codex config file.

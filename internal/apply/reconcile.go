@@ -60,6 +60,8 @@ func (r *Reconciliation) candidate(i contract.Item) (lock.Item, error) {
 	switch i.Kind {
 	case lock.File, lock.MDSection:
 		v.Hash = lock.HashBytes(i.Bytes)
+	case lock.TOMLTable:
+		v.Hash, err = lock.HashTOML(i.Value)
 	case lock.JSONEntry:
 		v.Hash, err = lock.HashJSON(i.Value)
 	case lock.JSONArrayElement:

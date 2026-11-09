@@ -1,0 +1,1 @@
+- 2026-11-09T10:42:45Z codex: Implemented, ready for check: Added the native Codex adapter with shared skills/fragments, reference-only MCP and table-scoped TOML ownership, translated agents, CLI/import integration and documentation; all required offline checks and built-binary temporary-project verification pass.

@@ -340,7 +340,7 @@ func (r *Reconciliation) executeBatch(p plan.Plan, batch []int) error {
 		}
 	} else if !os.IsNotExist(err) {
 		return err
-	} else if first.item.Kind != lock.MDSection {
+	} else if first.item.Kind != lock.MDSection && first.item.Kind != lock.TOMLTable {
 		data = []byte("{}")
 	}
 	writing := false
@@ -364,11 +364,16 @@ func (r *Reconciliation) executeBatch(p plan.Plan, batch []int) error {
 			if w.observation.State == lock.Missing || w.item.Preserve {
 				continue
 			}
-			if w.item.Kind == lock.MDSection {
+			switch w.item.Kind {
+			case lock.MDSection:
 				data, err = lock.RemoveSection(data, w.item.Marker)
-			} else {
+			case lock.TOMLTable:
+				data, err = lock.RemoveTOML(data, w.item)
+			default:
 				data, err = lock.RemoveJSON(data, w.item)
 			}
+		case w.item.Kind == lock.TOMLTable:
+			data, err = lock.SetTOML(data, w.item, w.payload.Value)
 		case w.item.Kind == lock.MDSection:
 			data, err = lock.SetSection(data, w.item.Marker, w.payload.Bytes)
 		default:

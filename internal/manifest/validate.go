@@ -10,7 +10,7 @@ import (
 	"github.com/fluid-movement/daypack/internal/library"
 )
 
-var knownHarnesses = []string{"claude-code", "pi"}
+var knownHarnesses = []string{"claude-code", "pi", "codex"}
 
 var namePattern = regexp.MustCompile(`^[a-z0-9-]{1,64}$`)
 

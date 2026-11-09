@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/fluid-movement/daypack/internal/adapters/claudecode"
+	"github.com/fluid-movement/daypack/internal/adapters/codex"
 	"github.com/fluid-movement/daypack/internal/adapters/contract"
 	"github.com/fluid-movement/daypack/internal/adapters/pi"
 	"github.com/fluid-movement/daypack/internal/library"
@@ -20,7 +21,9 @@ type Registry struct {
 }
 
 // DefaultRegistry is the single production registration list.
-func DefaultRegistry() (*Registry, error) { return NewRegistry(claudecode.New(), pi.New()) }
+func DefaultRegistry() (*Registry, error) {
+	return NewRegistry(claudecode.New(), pi.New(), codex.New())
+}
 
 func NewRegistry(adapters ...contract.Adapter) (*Registry, error) {
 	r := &Registry{adapters: map[string]contract.Adapter{}, targets: map[string]contract.Target{}, declared: map[string]map[string]contract.Target{}}

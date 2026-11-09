@@ -107,3 +107,42 @@ with this module's Go 1.27 requirement. The linter FAQ requires a build using
 at least the analyzed Go language version:
 https://golangci-lint.run/docs/welcome/faq/#which-go-versions-are-supported
 CI may fetch tools and modules; tests themselves do not access the network.
+
+## Codex documentation baseline and runtime limits
+
+Researched 2026-11-09 against official OpenAI documentation (current project
+layout, without a claim of compatibility with every installed CLI version):
+
+- [Skills](https://learn.chatgpt.com/docs/build-skills): shared `.agents/skills`
+  discovery and symlinked skill directories.
+- [MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli): project
+  `.codex/config.toml`, `mcp_servers`, `env_vars`, `bearer_token_env_var`,
+  `http_headers` and `env_http_headers`.
+- [Config basics](https://learn.chatgpt.com/docs/config-file/config-basic) and
+  [reference](https://learn.chatgpt.com/docs/config-file/config-reference):
+  project config trust and precedence.
+- [AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md):
+  override precedence, directory discovery and default 32 KiB combined limit.
+- [Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents):
+  standalone project `.codex/agents/*.toml`, required name, description and
+  developer_instructions, optional model, inherited permissions/provider/MCP.
+
+Offline tests cover renderer conformance and native TOML goldens; reference
+capability rejection and secret sentinels; shared selection and last-reader
+removal; table semantic hashes, quoted keys and descendants; user-byte
+preservation, drift/adopt/force/eject, dry-run immutability, symlink containment,
+symlinked library roots, and tracked/untracked excludes. The built daypack binary
+can also be exercised on a realpath temporary project without launching Codex.
+
+The following runtime behavior remains **UNVERIFIED**: installed Codex version
+compatibility; project config skipping in trusted/untrusted interactive and
+headless sessions; real custom-agent discovery/invocation; real MCP startup and
+authentication. Generated config parsing does not verify those behaviors. No live
+Codex eval is authorized or run by this implementation.
+
+Future live verification requires the user's OK: record the Codex version, use
+disposable trusted and untrusted projects with innocuous local MCP servers and
+synthetic environment credentials, compare interactive/headless discovery,
+explicitly invoke the translated custom agent and observe inherited permissions,
+and verify MCP startup/authentication without exposing credentials. Do not modify
+real trust decisions or use real credentials for these checks.

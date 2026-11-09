@@ -310,3 +310,15 @@ func TestShortWritesAndNonCandidateGates(t *testing.T) {
 		}
 	}
 }
+
+func TestTOMLTablePlanSerialization(t *testing.T) {
+	p := plan.Plan{Operations: []plan.Operation{{Target: contract.CodexConfigTOML, Entry: "mcp:docs", Kind: lock.TOMLTable, Path: ".codex/config.toml", Key: "mcp_servers.docs", Action: plan.Create}}}
+	text, data := rendered(t, p)
+	if !strings.Contains(text, ".codex/config.toml") || !strings.Contains(data, `"kind":"toml-table"`) || !strings.Contains(data, `"key":"mcp_servers.docs"`) {
+		t.Fatal(text, data)
+	}
+	p.Operations[0].Key = ""
+	if _, err := plan.Normalize(p); err == nil {
+		t.Fatal("missing TOML key accepted")
+	}
+}

@@ -1,0 +1,4 @@
+description = "Review \"quotes\" and Unicode ☃"
+developer_instructions = "Line one.\n\"\"\"\nline two \\ path\n"
+model = "explicit-model"
+name = "reviewer"

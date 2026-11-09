@@ -11,6 +11,7 @@ type Kind string
 const (
 	Symlink          Kind = "symlink"
 	File             Kind = "file"
+	TOMLTable        Kind = "toml-table"
 	JSONEntry        Kind = "json-entry"
 	JSONArrayElement Kind = "json-array-element"
 	MDSection        Kind = "md-section"
@@ -41,6 +42,8 @@ func identity(i Item) string {
 	switch i.Kind {
 	case File, Symlink:
 		return i.Path
+	case TOMLTable:
+		return i.Path + "\x00toml\x00" + i.Key
 	case JSONEntry:
 		return i.Path + "\x00json\x00" + i.Key
 	case JSONArrayElement:
@@ -79,7 +82,7 @@ func validateItem(i Item) error {
 	}
 	switch i.Kind {
 	case File, Symlink:
-	case JSONEntry, JSONArrayElement:
+	case JSONEntry, JSONArrayElement, TOMLTable:
 		if _, err := keySegments(i.Key); err != nil {
 			return err
 		}

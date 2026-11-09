@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/fluid-movement/daypack/internal/adapters"
 	"github.com/fluid-movement/daypack/internal/adapters/contract"
@@ -130,7 +131,11 @@ func Build(ctx context.Context, root string, m *manifest.Manifest, lib *library.
 		return nil, err
 	}
 	for _, u := range result.Unsupported {
-		r.diagnostic(u.Entry, u.Harness, plan.Unsupported, "artifact type is unsupported")
+		reason := "artifact type is unsupported"
+		if len(u.Fields) > 0 {
+			reason = "unsupported fields: " + strings.Join(u.Fields, ", ")
+		}
+		r.diagnostic(u.Entry, u.Harness, plan.Unsupported, reason)
 		r.blocked[u.Entry] = true
 	}
 	if result.Items, err = r.shapeInstructions(m, result.Items); err != nil {

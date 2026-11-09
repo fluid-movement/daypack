@@ -280,7 +280,7 @@ func checkHarnesses(m *Manifest, kind library.ArtifactType, entry Entry) error {
 	}
 	seen := map[string]bool{}
 	for _, h := range entry.Harnesses {
-		if (h != "claude-code" && h != "pi") || !slices.Contains(m.Harnesses, h) || seen[h] {
+		if !slices.Contains(knownHarnesses, h) || !slices.Contains(m.Harnesses, h) || seen[h] {
 			return fmt.Errorf("invalid harness selection for %s:%s", kind, entry.Name)
 		}
 		seen[h] = true

@@ -92,6 +92,8 @@ func observe(root string, i Item) (string, bool, error) {
 	switch i.Kind {
 	case File:
 		return HashBytes(b), true, nil
+	case TOMLTable:
+		return observeTOML(b, i.Key)
 	case JSONEntry, JSONArrayElement:
 		v, _, e := jsonValue(b, i.Key)
 		if e != nil {
@@ -171,9 +173,12 @@ func (l *Lock) RemoveOwnedWithForce(root string, i Item, roots []string, force b
 		if err != nil {
 			return err
 		}
-		if old.Kind == MDSection {
+		switch old.Kind {
+		case MDSection:
 			b, err = RemoveSection(b, old.Marker)
-		} else {
+		case TOMLTable:
+			b, err = RemoveTOML(b, old)
+		default:
 			b, err = RemoveJSON(b, old)
 		}
 		if err != nil {

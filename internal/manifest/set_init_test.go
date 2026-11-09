@@ -75,7 +75,7 @@ func TestInitSkeleton(t *testing.T) {
 		t.Fatalf("got:\n%s", got)
 	}
 	m, err := LoadManifest(path)
-	if err != nil || strings.Join(m.Harnesses, ",") != "claude-code,pi" {
+	if err != nil || strings.Join(m.Harnesses, ",") != "claude-code,pi,codex" {
 		t.Fatal(err, m)
 	}
 	data := got
@@ -186,4 +186,12 @@ func mustRead(t *testing.T, path string) []byte {
 		t.Fatal(err)
 	}
 	return b
+}
+
+func TestSetCodexHarnessSelection(t *testing.T) {
+	before := []byte("version=1\nharnesses=['claude-code','pi','codex']\nskills=['testing']\n")
+	out, changed, err := SetEntry(before, library.Skill, Entry{Name: "testing", Harnesses: []string{"codex"}})
+	if err != nil || !changed || !strings.Contains(string(out), `{ name = "testing", harnesses = ["codex"] }`) {
+		t.Fatal(string(out), changed, err)
+	}
 }

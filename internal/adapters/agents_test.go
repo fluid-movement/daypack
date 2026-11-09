@@ -26,7 +26,7 @@ func TestDefaultClaudeAgents(t *testing.T) {
 	if !ok || !a.Supports(library.Agent) || !a.Supports(library.Skill) {
 		t.Fatal("Claude agent adapter absent")
 	}
-	if !reflect.DeepEqual(r.Names(), []string{"claude-code", "pi"}) {
+	if !reflect.DeepEqual(r.Names(), []string{"claude-code", "codex", "pi"}) {
 		t.Fatal(r.Names())
 	}
 	want := []contract.Target{
@@ -37,6 +37,8 @@ func TestDefaultClaudeAgents(t *testing.T) {
 		{ID: contract.ClaudeMCPJSON, Root: ".mcp.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
 		{ID: contract.ClaudeMD, Root: "CLAUDE.md", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.Fragment}},
 		{ID: contract.ClaudeSkillsDir, Root: ".claude/skills", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Skill}},
+		{ID: contract.CodexAgentsDir, Root: ".codex/agents", Mode: contract.DirectoryRoot, Types: []contract.ArtifactType{library.Agent}},
+		{ID: contract.CodexConfigTOML, Root: ".codex/config.toml", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
 		{ID: contract.PiMCPJSON, Root: ".pi/mcp.json", Mode: contract.FileRoot, Types: []contract.ArtifactType{library.MCP}},
 	}
 	if !reflect.DeepEqual(r.Targets(), want) {

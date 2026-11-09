@@ -32,6 +32,9 @@ func (s *scanner) native(path, harness string, kind library.ArtifactType) {
 		return
 	}
 	c.sources = []Source{source}
+	if harness == "pi" && kind == library.Skill {
+		c.sources = append(c.sources, Source{Harness: "codex", Path: path})
+	}
 	s.candidates = append(s.candidates, c)
 }
 func (s *scanner) skills(root, harness string, recursive bool, seen map[string]bool) {

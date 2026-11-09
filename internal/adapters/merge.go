@@ -211,6 +211,13 @@ func (r *Registry) validateItem(name string, entry contract.Entry, item contract
 		if item.Marker == "" || item.Link != "" || len(item.Value) != 0 || item.Key != "" {
 			return fail()
 		}
+	case contract.TOMLTable:
+		if item.Key == "" || item.Link != "" || item.Marker != "" || len(item.Bytes) != 0 {
+			return fail()
+		}
+		if _, err := lock.HashTOML(item.Value); err != nil {
+			return fail()
+		}
 	case contract.JSONEntry, contract.JSONArrayElement:
 		if item.Key == "" || item.Link != "" || item.Marker != "" || len(item.Bytes) != 0 {
 			return fail()

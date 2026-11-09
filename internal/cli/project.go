@@ -32,7 +32,7 @@ func initCommand() *cobra.Command {
 	cmd := &cobra.Command{Use: "init", Short: "Create daypack.toml", Args: cobra.NoArgs}
 	var harnesses []string
 	var from string
-	cmd.Flags().StringSliceVar(&harnesses, "harness", nil, "Harnesses to target (claude-code, pi; default both)")
+	cmd.Flags().StringSliceVar(&harnesses, "harness", nil, "Harnesses to target (claude-code, pi, codex; default all)")
 	cmd.Flags().StringVar(&from, "from", "", "Copy another project's manifest (directory or daypack.toml)")
 	SetHandler(cmd, func(_ context.Context, opts Options, _ []string) (Result, error) {
 		if _, err := manifest.NormalizeHarnesses(harnesses); err != nil {
@@ -98,14 +98,14 @@ func addCommand() *cobra.Command {
 		restrict := cmd.Flags().Changed("only")
 		if restrict {
 			if len(only) == 0 || slices.Contains(only, "") {
-				return Result{}, &Failure{Code: Usage, Cause: errors.New("--only must list harnesses"), Hint: "Use claude-code, pi or both."}
+				return Result{}, &Failure{Code: Usage, Cause: errors.New("--only must list harnesses"), Hint: "Use claude-code, pi, codex or a combination."}
 			}
 			if sorted := slices.Sorted(slices.Values(only)); len(slices.Compact(sorted)) != len(only) {
 				return Result{}, &Failure{Code: Usage, Cause: errors.New("--only repeats a harness")}
 			}
 			for _, h := range only {
-				if h != "claude-code" && h != "pi" {
-					return Result{}, &Failure{Code: Usage, Cause: fmt.Errorf("invalid or repeated harness %q", h), Hint: "Use claude-code, pi or both."}
+				if h != "claude-code" && h != "pi" && h != "codex" {
+					return Result{}, &Failure{Code: Usage, Cause: fmt.Errorf("invalid or repeated harness %q", h), Hint: "Use claude-code, pi, codex or a combination."}
 				}
 			}
 		}

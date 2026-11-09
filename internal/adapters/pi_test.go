@@ -72,7 +72,7 @@ func TestRealPiSelectionAndReaders(t *testing.T) {
 	if len(got.Items) != 1 || got.Items[0].Target != contract.AgentsSkillsDir || !reflect.DeepEqual(adapters.Readers(got.Items[0].Target), wantReaders) {
 		t.Fatal(got)
 	}
-	for _, name := range wantReaders[:5] {
+	for _, name := range wantReaders[1:5] {
 		if _, ok := r.Lookup(name); ok {
 			t.Fatal("reader registered", name)
 		}

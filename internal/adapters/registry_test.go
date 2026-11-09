@@ -17,7 +17,7 @@ func TestDefaultRegistry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(r.Names(), []string{"claude-code", "pi"}) {
+	if !reflect.DeepEqual(r.Names(), []string{"claude-code", "codex", "pi"}) {
 		t.Fatal(r.Names())
 	}
 	a, ok := r.Lookup("claude-code")
@@ -28,7 +28,12 @@ func TestDefaultRegistry(t *testing.T) {
 	if _, concrete := p.(*pi.Adapter); !ok || !concrete {
 		t.Fatal("missing Pi adapter")
 	}
+	c, ok := r.Lookup("codex")
+	if !ok {
+		t.Fatal("missing Codex adapter")
+	}
 	wantTargets := append(a.Targets(), p.Targets()...)
+	wantTargets = append(wantTargets, c.Targets()...)
 	slices.SortFunc(wantTargets, func(a, b contract.Target) int { return strings.Compare(a.ID, b.ID) })
 	wantTargets = slices.CompactFunc(wantTargets, func(a, b contract.Target) bool { return a.ID == b.ID })
 	if !reflect.DeepEqual(r.Targets(), wantTargets) {

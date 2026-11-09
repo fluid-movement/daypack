@@ -79,6 +79,7 @@ type ItemKind = lock.Kind
 const (
 	Symlink          = lock.Symlink
 	File             = lock.File
+	TOMLTable        = lock.TOMLTable
 	JSONEntry        = lock.JSONEntry
 	JSONArrayElement = lock.JSONArrayElement
 	MarkdownSection  = lock.MDSection

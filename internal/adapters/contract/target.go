@@ -27,6 +27,8 @@ const (
 	ClaudeMCPJSON     = "claude-mcp-json"
 	PiMCPJSON         = "pi-mcp-json"
 	ClaudeMCPApproval = "claude-mcp-approval"
+	CodexConfigTOML   = "codex-config-toml"
+	CodexAgentsDir    = "codex-agents-dir"
 	ClaudeAgentsDir   = "claude-agents-dir"
 )
 

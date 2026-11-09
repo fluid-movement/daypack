@@ -1,0 +1,4 @@
+  [mcp_servers.docs]
+    url = "https://example.invalid"
+    [mcp_servers.docs.env_http_headers]
+      authorization = "AUTH"

@@ -1,0 +1,6 @@
+  [mcp_servers.docs]
+    args = ["hello", "quoted \" value"]
+    command = "echo"
+    env_vars = ["TOKEN"]
+    [mcp_servers.docs.env]
+      MODE = "offline"

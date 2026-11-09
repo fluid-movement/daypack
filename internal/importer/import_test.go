@@ -112,7 +112,7 @@ func TestImportCompleteNativeAndMCP(t *testing.T) {
 			t.Fatal("preview cleanup eligibility")
 		}
 	}
-	if len(item(t, r, "native").Sources) != 3 || len(item(t, r, "local").Sources) != 3 {
+	if len(item(t, r, "native").Sources) != 4 || len(item(t, r, "local").Sources) != 3 {
 		t.Fatal("source aliases lost")
 	}
 	foundPointer := false
@@ -457,5 +457,24 @@ func TestGeneratedLibraryInstructionsExcluded(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(f.Library, "skills", "review", "AGENTS.md"))
 	if err != nil || string(data) != "handwritten support instructions\r\n" {
 		t.Fatalf("support guide: %q %v", data, err)
+	}
+}
+
+func TestSharedSkillsCodexAndPiProvenance(t *testing.T) {
+	f, opts := fixture(t, false)
+	path := filepath.Join(f.Home, ".agents", "skills", "shared")
+	skill(t, path, "shared")
+	before := testutil.SnapshotTree(t, f.Home)
+	r := run(t, opts)
+	if len(r.Items) != 1 || len(r.Items[0].Sources) != 2 {
+		t.Fatal(r.Items)
+	}
+	sources := r.Items[0].Sources
+	if sources[0].Harness != "codex" || sources[1].Harness != "pi" || sources[0].Path != path || sources[1].Path != path {
+		t.Fatal(sources)
+	}
+	testutil.AssertTree(t, f.Home, before)
+	if _, err := os.Stat(filepath.Join(f.Library, "skills", "shared", "SKILL.md")); err != nil {
+		t.Fatal(err)
 	}
 }

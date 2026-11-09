@@ -156,7 +156,7 @@ func TestMixedSkillsAgentsMCP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(r.Names(), []string{"claude-code", "pi"}) {
+	if !reflect.DeepEqual(r.Names(), []string{"claude-code", "codex", "pi"}) {
 		t.Fatal("duplicate registration")
 	}
 	entries := []contract.Entry{skill("testing"), {Ref: "agent:reviewer", Artifact: library.Artifact{Type: library.Agent, Name: "reviewer"}, Content: []byte("native")}, mcp("docs", library.MCPDefinition{Type: "stdio", Command: "echo"})}

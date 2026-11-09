@@ -145,7 +145,7 @@ func Normalize(p Plan) (Plan, error) {
 				return bad("link")
 			}
 		case lock.File:
-		case lock.JSONEntry:
+		case lock.JSONEntry, lock.TOMLTable:
 			if o.Key == "" {
 				return bad("key")
 			}

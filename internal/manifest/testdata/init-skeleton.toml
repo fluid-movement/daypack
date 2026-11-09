@@ -1,6 +1,6 @@
 # daypack manifest: the AI configuration this project uses.
 version = 1
-harnesses = ["claude-code", "pi"]
+harnesses = ["claude-code", "pi", "codex"]
 
 # Library references, by name. A table restricts an entry to some harnesses:
 #   { name = "context7", harnesses = ["claude-code"] }

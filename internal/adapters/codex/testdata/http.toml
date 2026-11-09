@@ -1,0 +1,7 @@
+  [mcp_servers.docs]
+    bearer_token_env_var = "TOKEN"
+    url = "https://example.invalid/mcp"
+    [mcp_servers.docs.env_http_headers]
+      X-Custom = "CUSTOM"
+    [mcp_servers.docs.http_headers]
+      X-Region = "eu"

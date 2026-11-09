@@ -21,11 +21,11 @@ type InitOptions struct {
 }
 
 // NormalizeHarnesses validates a harness selection and returns it in canonical
-// order. An empty selection means both harnesses.
+// order. An empty selection means all known harnesses.
 func NormalizeHarnesses(selected []string) ([]string, error) {
 	for _, h := range selected {
 		if !slices.Contains(knownHarnesses, h) {
-			return nil, fmt.Errorf("unknown harness %q (expected claude-code or pi)", h)
+			return nil, fmt.Errorf("unknown harness %q (expected claude-code, pi or codex)", h)
 		}
 	}
 	if len(selected) == 0 {
